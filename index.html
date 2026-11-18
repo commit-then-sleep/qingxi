@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>清息</title>
-<meta name="description" content="清息：一个安静、私密的戒烟记录。所有数据只存在你的设备里。">
+<meta name="description" content="清息：一个安静、私密的戒烟与节制记录，可以同时戒好几件事。所有数据只存在你的设备里。">
 
 <!-- PWA：添加到主屏幕后全屏运行 -->
 <meta name="theme-color" content="#0D1E28">
@@ -195,8 +195,14 @@ svg{display:block}
 .view-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;min-height:56px}
 .greet{font-size:27px;font-weight:600;letter-spacing:-.01em;line-height:1.2}
 .greet-sub{font-size:12.5px;color:var(--tx-3);margin-bottom:3px}
-.day-pill{display:inline-flex;align-items:center;gap:7px;height:32px;margin-bottom:2px;font-size:12.5px;font-weight:500;color:var(--tx-2);white-space:nowrap}
-.day-pill::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--mint);box-shadow:0 0 8px var(--mint)}
+/* 右上角：正在看的那件事 · 第几天。点开可以切换、再戒一件事 */
+.habit-pill{display:inline-flex;align-items:center;gap:7px;min-width:0;max-width:58%;min-height:44px;margin-bottom:-4px;font-size:12.5px;font-weight:500;color:var(--tx-2);white-space:nowrap;transition:opacity .2s,transform .4s var(--spring)}
+.habit-pill::before{content:"";flex:none;width:6px;height:6px;border-radius:50%;background:var(--mint);box-shadow:0 0 8px var(--mint)}
+.habit-pill:active{transform:scale(.94);opacity:.7}
+.hp-name{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.hp-day{flex:none}
+.hp-day::before{content:"·";margin-right:7px;color:var(--tx-4)}
+.habit-pill .ic{flex:none;width:14px;height:14px;margin-left:-2px;color:var(--tx-3);transform:rotate(90deg)}
 
 /* 山脊：把天空和下面的内容接起来。山脊以下是不透明的「地面」，滚动时会漫过星空 */
 /* 首页左右不留内边距，由 .home-body 按屏幕边缘统一裁切：月亮外圈旋转的元素不会把页面横向撑宽 */
@@ -707,6 +713,55 @@ html,body,.app,.land{transition:background-color .5s ease}
 .swatch i{width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 34% 30%,var(--moon-a),var(--moon-c) 60%,var(--moon-d));box-shadow:0 0 14px rgba(var(--moon-glow),.45)}
 .swatch::after{content:"";position:absolute;inset:7px;border-radius:50%;border:2px solid transparent;border-top-color:var(--mint);border-left-color:var(--mint);transform:rotate(20deg);opacity:.9}
 
+/* ---------- 14. 好几件事：引导里选「戒什么」、首页切换、各页的小签 ---------- */
+/* 引导第一步：两张可选的卡 */
+.kinds{display:grid;gap:12px}
+.kind{display:block;width:100%;text-align:left;padding:18px 20px;border-radius:24px;background:rgba(255,255,255,.04);box-shadow:inset 0 0 0 1px var(--hair-2);
+  transition:background .3s,box-shadow .3s,transform .4s var(--spring),opacity .3s}
+.kind:active{transform:scale(.97)}
+.kind b{display:block;font-size:18px;font-weight:600;transition:color .3s}
+.kind small{display:block;font-size:13.5px;line-height:1.6;color:var(--tx-3);margin-top:4px}
+.kind.is-on{background:rgba(var(--ac),.1);box-shadow:inset 0 0 0 1.5px rgba(var(--ac),.65),0 16px 36px -20px rgba(var(--ac),.7)}
+.kind.is-on b{color:var(--mint)}
+.kind[disabled]{opacity:.38;pointer-events:none}
+.kind[disabled] small::after{content:" · 已经在戒了"}
+.ob-name{display:grid;gap:14px}
+.ob-note{font-size:12.5px;color:var(--tx-4)}
+/* 「再戒一件事」时，引导层盖在主界面上，自己铺一层夜空 */
+.onboard.is-adding{background:linear-gradient(180deg,var(--sky-1) 0%,var(--sky-2) 48%,var(--bg) 100%);animation:obIn .5s var(--out)}
+@keyframes obIn{from{opacity:0;transform:scale(1.03)}to{opacity:1;transform:none}}
+
+/* 月亮上的小圆点：有几件事、正在看第几件 */
+.habit-dots{display:flex;gap:6px;margin-top:12px}
+.habit-dots i{width:5px;height:5px;border-radius:50%;background:rgba(var(--ink-rgb),.22);transition:background .3s,transform .3s}
+.habit-dots i.is-on{background:rgba(var(--ink-rgb),.62);transform:scale(1.35)}
+/* 左右滑动月亮切换：触摸时浏览器只接管上下滚动；切换后，读数从滑动的方向进来 */
+.hero{touch-action:pan-y}
+.hero.swap-next .hero-center{animation:swapNext .55s var(--out)}
+.hero.swap-prev .hero-center{animation:swapPrev .55s var(--out)}
+@keyframes swapNext{from{opacity:0;transform:translate3d(30px,0,0)}to{opacity:1;transform:none}}
+@keyframes swapPrev{from{opacity:0;transform:translate3d(-30px,0,0)}to{opacity:1;transform:none}}
+.stat-ico{display:block}
+
+/* 洞察、成就、设置页顶部的小签：看哪一件事 */
+.habit-chips{margin-top:18px}
+.habit-chips .chip{padding:0 16px;font-size:14px}
+.chip-add{background:none;box-shadow:inset 0 0 0 1px rgba(var(--ac),.35);color:var(--mint)}
+/* 首页小签点开的面板 */
+.habit-list{border-top:1px solid var(--hair)}
+.habit-row{display:flex;align-items:center;gap:14px;width:100%;min-height:66px;text-align:left;border-bottom:1px solid var(--hair);transition:opacity .2s}
+.habit-row:active{opacity:.55}
+.habit-row::before{content:"";flex:none;width:8px;height:8px;border-radius:50%;background:var(--hair-2)}
+.habit-row.is-on::before{background:var(--mint);box-shadow:0 0 8px var(--mint)}
+.habit-row b{display:block;font-size:16px;font-weight:500}
+.habit-row small{display:block;font-size:12.5px;color:var(--tx-3);margin-top:2px}
+.habit-row .ic{margin-left:auto;width:20px;height:20px;color:var(--mint)}
+#hb-add .ic{width:18px;height:18px}
+/* 设置：按天 / 按周的小切换、删除这件事 */
+.seg-sm{width:168px;flex:none}
+.seg-sm button{font-size:13.5px}
+.set-delete{display:flex;width:fit-content;margin:16px auto 0;color:var(--rose)}
+
 
 </style>
 </head>
@@ -734,6 +789,7 @@ html,body,.app,.land{transition:background-color .5s ease}
     <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 20h14"/></symbol>
     <symbol id="i-up" viewBox="0 0 24 24"><path d="M12 16V5m0 0L7.5 9.5M12 5l4.5 4.5M5 20h14"/></symbol>
     <symbol id="i-trash" viewBox="0 0 24 24"><path d="M5 7h14M10 7V4.5h4V7M7 7l.8 12.5h8.4L17 7"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5.5v13M5.5 12h13"/></symbol>
     <symbol id="i-tea" viewBox="0 0 24 24"><path d="M6.5 8.5h11M7.3 8.5l1.2 11.3a1.4 1.4 0 0 0 1.4 1.2h4.2a1.4 1.4 0 0 0 1.4-1.2l1.2-11.3M9.5 8.5 9 6.3a1.2 1.2 0 0 1 1.2-1.4h3.6A1.2 1.2 0 0 1 15 6.3l-.5 2.2M13 4.9l1.4-2.4 2.3-.3"/><circle cx="10.4" cy="17.4" r=".7"/><circle cx="13.2" cy="18" r=".7"/><circle cx="12.2" cy="15.6" r=".7"/></symbol>
     <symbol id="i-ticket" viewBox="0 0 24 24"><path d="M3.5 8a2 2 0 0 0 2-2h13a2 2 0 0 0 2 2v8a2 2 0 0 0-2 2h-13a2 2 0 0 0-2-2z"/><path d="M15 6.5v11" stroke-dasharray="1.6 2"/></symbol>
     <symbol id="i-pot" viewBox="0 0 24 24"><path d="M4 11.5h16a8 7 0 0 1-16 0zM2.5 13h1.5M20 13h1.5M9 8c-.9-1.1.9-2 0-3.3M12.5 8c-.9-1.1.9-2 0-3.3M16 8c-.9-1.1.9-2 0-3.3"/></symbol>
@@ -743,12 +799,12 @@ html,body,.app,.land{transition:background-color .5s ease}
     <symbol id="i-phone" viewBox="0 0 24 24"><rect x="6.5" y="2.5" width="11" height="19" rx="2.2"/><path d="M10.8 18.5h2.4"/></symbol>
   </defs></svg>
 
-  <!-- ==================== 首次引导 ==================== -->
+  <!-- ==================== 首次引导（「再戒一件事」也走这里，从第一步开始） ==================== -->
   <!-- 带 data-pig / data-art 的占位元素，启动时会被换成对应的插画 -->
   <section class="onboard" id="onboard" hidden>
     <div class="ob-top">
       <button type="button" class="icon-btn" id="ob-back" aria-label="上一步" style="visibility:hidden"><svg class="ic"><use href="#i-back"/></svg></button>
-      <div class="ob-progress" id="ob-progress"><i></i><i></i><i></i><i></i></div>
+      <div class="ob-progress" id="ob-progress"><i></i><i></i><i></i><i></i><i></i></div>
       <span style="width:44px;flex:none"></span>
     </div>
     <div class="ob-stage">
@@ -756,17 +812,38 @@ html,body,.app,.land{transition:background-color .5s ease}
         <div class="ob-scene"><i data-pig="is-wave"></i></div>
         <p class="eyebrow">清息</p>
         <h1 class="h1">从这一口<br><span class="grad-text">干净的呼吸</span>开始</h1>
-        <p class="sub">我是<span data-call>猪猪</span>，接下来由我陪你戒烟。<br>先花一分钟，告诉我几件事。</p>
+        <p class="sub">我是<span data-call>猪猪</span>，接下来由我陪着你。<br>先花一分钟，告诉我几件事。</p>
       </div>
 
+      <!-- 第一步：戒什么。别的事自己起名字（不想写，就叫它「那件事」） -->
       <div class="ob-step" data-step="1">
         <p class="ob-who"><i data-pig="" data-head></i><span class="eyebrow">第一步</span></p>
-        <h1 class="h1">最后一支烟，<br>是什么时候？</h1>
+        <h1 class="h1">这一次，<br>想戒掉什么？</h1>
+        <div class="kinds" id="ob-kinds" role="radiogroup" aria-label="想戒掉什么">
+          <button type="button" class="kind" data-kind="smoke" role="radio" aria-checked="false"><b>抽烟</b><small>按支数、烟钱和身体的恢复来算</small></button>
+          <button type="button" class="kind" data-kind="custom" role="radio" aria-checked="false"><b>别的事</b><small>自己起个名字，按次数、时间和钱来算</small></button>
+        </div>
+        <div class="ob-name" id="ob-name-box" hidden>
+          <input class="input" id="ob-name" maxlength="12" placeholder="给它起个名字" enterkeyhint="next" autocomplete="off" aria-label="要戒掉的事的名字">
+          <div class="chips" id="ob-names">
+            <button type="button" class="chip" data-name="刷短视频">刷短视频</button>
+            <button type="button" class="chip" data-name="熬夜">熬夜</button>
+            <button type="button" class="chip" data-name="打游戏">打游戏</button>
+            <button type="button" class="chip" data-name="喝奶茶">喝奶茶</button>
+            <button type="button" class="chip" data-name="那件事">不想写，就叫「那件事」</button>
+          </div>
+          <p class="ob-note">名字只出现在你自己的手机上。</p>
+        </div>
+      </div>
+
+      <div class="ob-step" data-step="2">
+        <p class="ob-who"><i data-pig="" data-head></i><span class="eyebrow">第二步</span></p>
+        <h1 class="h1" id="ob-when-title">最后一支烟，<br>是什么时候？</h1>
         <label class="when">
           <span class="when-main num" id="ob-when-main"></span>
           <span class="when-sub" id="ob-when-sub"></span>
           <span class="when-edit">修改</span>
-          <input type="datetime-local" id="ob-date" aria-label="最后一支烟的日期和时间">
+          <input type="datetime-local" id="ob-date" aria-label="开始的日期和时间">
         </label>
         <div class="chips" id="ob-quick">
           <button type="button" class="chip" data-quick="now">就是现在</button>
@@ -776,11 +853,26 @@ html,body,.app,.land{transition:background-color .5s ease}
         <p class="sub" style="font-size:14px">可以是刚才，也可以是几天前。从那一刻起，都算数。</p>
       </div>
 
-      <div class="ob-step" data-step="2">
-        <p class="ob-who"><i data-pig="" data-head></i><span class="eyebrow">第二步</span></p>
-        <h1 class="h1">以前的你，<br>是怎么抽的？</h1>
-        <p class="sub">只用来算你少抽了多少、省下了多少。这些数字不会离开这台手机。</p>
-        <div class="rows">
+      <!-- 第三步：以前的量。戒烟和别的事各一组，按第一步的选择只显示其中一组 -->
+      <div class="ob-step" data-step="3">
+        <p class="ob-who"><i data-pig="" data-head></i><span class="eyebrow">第三步</span></p>
+        <h1 class="h1" id="ob-nums-title">以前的你，<br>是怎么抽的？</h1>
+        <p class="sub" id="ob-nums-sub">只用来算你少抽了多少、省下了多少。这些数字不会离开这台手机。</p>
+        <div class="rows" data-kind="custom" hidden>
+          <div class="row-item"><span>按什么算</span>
+            <div class="seg seg-sm" id="ob-period" role="radiogroup" aria-label="按天还是按周算"><button type="button" data-period="day" class="is-on" role="radio" aria-checked="true">按天</button><button type="button" data-period="week" role="radio" aria-checked="false">按周</button></div>
+          </div>
+          <div class="row-item"><span id="ob-freq-k">每天大约</span>
+            <div class="stepper" data-min="1" data-max="99"><button type="button" data-d="-1" aria-label="减少">−</button><input class="num" id="ob-freq" type="number" inputmode="numeric" value="1" aria-label="大约几次"><button type="button" data-d="1" aria-label="增加">+</button><em>次</em></div>
+          </div>
+          <div class="row-item"><span>每次花掉</span>
+            <div class="stepper" data-min="0" data-max="600"><button type="button" data-d="-5" aria-label="减少 5 分钟">−</button><input class="num" id="ob-minutes" type="number" inputmode="numeric" value="30" aria-label="每次花掉多少分钟"><button type="button" data-d="5" aria-label="增加 5 分钟">+</button><em>分钟</em></div>
+          </div>
+          <div class="row-item"><span>每次花的钱</span>
+            <div class="price"><select class="row-select cur-select" id="ob-currency-c" aria-label="货币"></select><input class="row-input num" id="ob-cost" type="number" inputmode="decimal" min="0" step="1" value="0" aria-label="每次花的钱"></div>
+          </div>
+        </div>
+        <div class="rows" data-kind="smoke">
           <div class="row-item"><span>每天抽</span>
             <div class="stepper" data-min="1" data-max="200"><button type="button" data-d="-1" aria-label="减少">−</button><input class="num" id="ob-perday" type="number" inputmode="numeric" value="20" aria-label="每天抽多少支"><button type="button" data-d="1" aria-label="增加">+</button><em>支</em></div>
           </div>
@@ -788,24 +880,21 @@ html,body,.app,.land{transition:background-color .5s ease}
             <div class="stepper" data-min="1" data-max="100"><button type="button" data-d="-1" aria-label="减少">−</button><input class="num" id="ob-perpack" type="number" inputmode="numeric" value="20" aria-label="每包多少支"><button type="button" data-d="1" aria-label="增加">+</button><em>支</em></div>
           </div>
           <div class="row-item"><span>每包价格</span>
-            <div class="price"><select class="row-select" id="ob-currency" aria-label="货币"></select><input class="row-input num" id="ob-price" type="number" inputmode="decimal" min="0" step="0.5" value="25" aria-label="每包价格"></div>
+            <div class="price"><select class="row-select cur-select" id="ob-currency" aria-label="货币"></select><input class="row-input num" id="ob-price" type="number" inputmode="decimal" min="0" step="0.5" value="25" aria-label="每包价格"></div>
           </div>
         </div>
       </div>
 
-      <div class="ob-step" data-step="3">
-        <p class="ob-who"><i data-pig="" data-head></i><span class="eyebrow">第三步</span></p>
+      <!-- 第四步：写给自己的话（下面的几个快捷句由脚本按「戒什么」换） -->
+      <div class="ob-step" data-step="4">
+        <p class="ob-who"><i data-pig="" data-head></i><span class="eyebrow">第四步</span></p>
         <h1 class="h1">写一句话，给<br>想放弃时的自己</h1>
         <textarea class="line-area" id="ob-reason" maxlength="60" rows="3" placeholder="比如：想陪女儿长大。"></textarea>
         <span class="ob-count num" id="ob-reason-n">0 / 60</span>
-        <div class="chips" id="ob-reasons">
-          <button type="button" class="chip" data-reason="想陪家人久一点。">为了家人</button>
-          <button type="button" class="chip" data-reason="想重新跑起来不喘。">为了身体</button>
-          <button type="button" class="chip" data-reason="不想再被一根烟牵着走。">为了自由</button>
-        </div>
+        <div class="chips" id="ob-reasons"></div>
       </div>
 
-      <div class="ob-step" data-step="4">
+      <div class="ob-step" data-step="5">
         <p class="ob-who"><i data-pig="is-happy" data-head></i><span class="eyebrow">准备好了</span></p>
         <h1 class="h1" id="ob-sum-title"></h1>
         <div class="ob-sum" id="ob-sum"></div>
@@ -825,18 +914,21 @@ html,body,.app,.land{transition:background-color .5s ease}
       <div class="home-body" id="home-body">
         <header class="view-head rise" style="--i:0">
           <div><p class="greet-sub" id="greet-sub"></p><h1 class="greet" id="greet">你好</h1></div>
-          <span class="day-pill num" id="day-pill"></span>
+          <!-- 正在看的那件事：点一下切换 / 再戒一件事 -->
+          <button type="button" class="habit-pill" id="habit-pill" aria-haspopup="dialog"><span class="hp-name" id="hp-name"></span><span class="hp-day num" id="hp-day"></span><svg class="ic"><use href="#i-chev"/></svg></button>
         </header>
 
+        <!-- 有好几件事时，在月亮上左右滑动切换 -->
         <div class="hero rise" id="hero" style="--i:1" role="timer" aria-label="已戒烟时长">
           <div class="moon-glow"></div>
           <div class="orbit"><div class="orbit-track"></div><div class="orbit-glow"><i></i></div><div class="orbit-arc"></div><div class="orbit-head"></div></div>
           <div class="sweep"></div>
           <div class="moon"><i class="crater c1"></i><i class="crater c2"></i><i class="crater c3"></i><i class="crater c4"></i></div>
           <div class="hero-center">
-            <span class="t-label">已戒烟</span>
+            <span class="t-label" id="t-label">已戒烟</span>
             <div class="t-days num" id="t-days-wrap"><span id="t-days"></span><small>天</small></div>
             <div class="t-hms num"><span id="t-h"></span><i>时</i><span id="t-m"></span><i>分</i><span class="is-sec" id="t-s"></span><i>秒</i></div>
+            <div class="habit-dots" id="habit-dots" aria-hidden="true" hidden></div>
           </div>
         </div>
 
@@ -858,52 +950,20 @@ html,body,.app,.land{transition:background-color .5s ease}
 
           <button type="button" class="crave-btn rise" id="btn-crave" style="--i:3">
             <span class="crave-ico"><i data-pig="" data-head></i></span>
-            <span><b>我想抽烟</b><small>先别急，<span data-call>猪猪</span>陪你呼吸 3 分钟</small></span>
+            <span><b id="crave-title">我想抽烟</b><small>先别急，<span data-call>猪猪</span>陪你呼吸 3 分钟</small></span>
             <svg class="ic chev"><use href="#i-chev"/></svg>
           </button>
 
-          <div class="stats rise" style="--i:4">
-            <div class="stat">
-              <!-- 折断的烟，缝里长出一棵小芽 -->
-              <svg class="float" viewBox="0 0 66 58" aria-hidden="true">
-                <g transform="rotate(-14 22 42)"><rect x="4" y="38" width="11" height="8" rx="2.5" fill="#E9A15C"/><rect x="14" y="38" width="15" height="8" rx="1" fill="#EEF0EC"/></g>
-                <g transform="rotate(15 46 42)"><rect x="37" y="38" width="18" height="8" rx="1" fill="#EEF0EC"/><rect x="54" y="38" width="6" height="8" rx="2" fill="#7E878A"/></g>
-                <path d="M33 40c0-7-1-12 1-18" fill="none" style="stroke:var(--mint)" stroke-width="2" stroke-linecap="round"/>
-                <path d="M34 25c-4-6-10-6-12-3 4 4 9 4 12 3z" style="fill:var(--mint)"/>
-                <path d="M34 22c3-7 10-8 12-5-3 5-8 6-12 5z" style="fill:var(--mint-deep)"/>
-              </svg>
-              <div class="v num"><span id="st-cigs"></span><small>支</small></div><p class="k">少抽了</p>
-            </div>
-            <div class="stat">
-              <!-- 一摞铜钱 -->
-              <svg class="float d2" viewBox="0 0 66 58" aria-hidden="true">
-                <path d="M10 44v4.5c0 3 7.2 5.5 16 5.5s16-2.5 16-5.5V44z" fill="#C4823A"/><ellipse cx="26" cy="44" rx="16" ry="5.2" fill="#F2C77E"/>
-                <path d="M10 36.5V41c0 3 7.2 5.5 16 5.5s16-2.5 16-5.5v-4.5z" fill="#C4823A"/><ellipse cx="26" cy="36.5" rx="16" ry="5.2" fill="#F2C77E"/>
-                <path d="M10 29v4.5c0 3 7.2 5.5 16 5.5s16-2.5 16-5.5V29z" fill="#C4823A"/><ellipse cx="26" cy="29" rx="16" ry="5.2" fill="#F8D9A0"/>
-                <rect x="22.6" y="27.6" width="6.8" height="2.8" rx=".7" fill="#C4823A"/>
-                <circle cx="48" cy="26" r="11.5" fill="#F8D9A0"/><circle cx="48" cy="26" r="8.3" fill="none" stroke="#D9A055" stroke-width="1.2"/>
-                <rect x="45" y="23" width="6" height="6" rx="1.2" fill="#0D1315"/>
-                <path d="M58 6.5l1 2.6 2.6 1-2.6 1-1 2.6-1-2.6-2.6-1 2.6-1z" fill="#FFF3D6"/>
-              </svg>
-              <div class="v num"><small id="st-cur">¥</small><span id="st-money"></span><small id="st-money-u"></small></div><p class="k">省下了</p>
-            </div>
-            <div class="stat">
-              <!-- 沙漏：流回来的时间 -->
-              <svg class="float d3" viewBox="0 0 66 58" aria-hidden="true">
-                <path d="M21 10v38M45 10v38" stroke="#8C6544" stroke-width="2.2"/>
-                <path d="M24 10c0 10 8 13.5 8 19s-8 9-8 19h18c0-10-8-13.5-8-19s8-9 8-19z" fill="rgba(255,255,255,.06)" stroke="rgba(255,255,255,.38)" stroke-width="1.2"/>
-                <path d="M26.5 19.5h13c-1.5 4-4.5 6-6.5 8.5-2-2.5-5-4.5-6.5-8.5z" style="fill:var(--mint)"/>
-                <path d="M25.6 48c1-6.2 4.2-9 7.4-9s6.4 2.8 7.4 9z" style="fill:var(--mint)"/>
-                <path class="sand" d="M33 29v10" style="stroke:var(--mint)" stroke-width="1.4" stroke-dasharray="2 2.5"/>
-                <rect x="17" y="6" width="32" height="5" rx="2.5" fill="#C99B6A"/><rect x="17" y="47" width="32" height="5" rx="2.5" fill="#C99B6A"/>
-              </svg>
-              <div class="v num"><span id="st-life"></span><small id="st-life-u">分钟</small></div><p class="k">找回生命</p>
-            </div>
+          <!-- 三个数字，各配一幅小画。画什么、算什么，由脚本按「戒什么」决定（见「首页」一节的 STAT_ART） -->
+          <div class="stats rise" id="stats" style="--i:4">
+            <div class="stat"><span class="stat-ico"></span><div class="v num"><small class="pre"></small><span class="val"></span><small class="unit"></small></div><p class="k"></p></div>
+            <div class="stat"><span class="stat-ico"></span><div class="v num"><small class="pre"></small><span class="val"></span><small class="unit"></small></div><p class="k"></p></div>
+            <div class="stat"><span class="stat-ico"></span><div class="v num"><small class="pre"></small><span class="val"></span><small class="unit"></small></div><p class="k"></p></div>
           </div>
 
-          <div class="sec-head rise" style="--i:5"><h2 class="h2">恢复之路</h2><small id="tl-count"></small></div>
+          <div class="sec-head rise" style="--i:5"><h2 class="h2" id="tl-title">恢复之路</h2><small id="tl-count"></small></div>
           <div class="tl rise" id="timeline" style="--i:6"></div>
-          <p class="fine">恢复节点参考公开的健康研究，每个人的节奏不同。<br>生命时间按每支烟约 11 分钟估算。</p>
+          <p class="fine" id="tl-fine"></p>
         </div>
       </div>
     </section>
@@ -911,13 +971,15 @@ html,body,.app,.land{transition:background-color .5s ease}
     <!-- 洞察：星空下的记录 -->
     <section class="view" id="view-insights" data-view="insights">
       <header class="page-top rise" style="--i:0"><h1 class="greet">洞察</h1><i data-art="scope"></i></header>
+      <!-- 有好几件事时，在这里切换要看哪一件 -->
+      <div class="chips habit-chips rise" id="ins-habits" style="--i:0" hidden></div>
       <div class="kpis rise" style="--i:1">
-        <div class="kpi"><p class="k">连续未复吸</p><div class="v num"><span id="k-streak">0</span><small id="k-streak-u">天</small></div></div>
+        <div class="kpi"><p class="k" id="k-streak-k">连续未复吸</p><div class="v num"><span id="k-streak">0</span><small id="k-streak-u">天</small></div></div>
         <div class="kpi"><p class="k">最长纪录</p><div class="v num"><span id="k-best">0</span><small id="k-best-u">天</small></div></div>
       </div>
-      <p class="trio rise" style="--i:2"><span><b id="k-wins">0</b>次扛住</span><span><b id="k-slips">0</b>次复吸</span><span><b id="k-rate">—</b>胜率</span></p>
+      <p class="trio rise" id="trio" style="--i:2"></p>
 
-      <div class="sec-head rise" style="--i:3"><h2 class="h2">烟瘾星图</h2><small>一天一颗星</small></div>
+      <div class="sec-head rise" style="--i:3"><h2 class="h2" id="cal-name">烟瘾星图</h2><small>一天一颗星</small></div>
       <div class="rise" style="--i:4">
         <div class="cal-head"><b class="num" id="cal-title"></b>
           <span style="display:flex">
@@ -928,7 +990,7 @@ html,body,.app,.land{transition:background-color .5s ease}
         <div class="cal-week"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div>
         <div class="cal-grid" id="cal"></div>
         <div class="cal-foot"><span id="cal-detail"></span>
-          <span class="cal-legend"><i style="--a:.2"></i><i style="--a:.4"></i><i style="--a:.66"></i><i style="--a:1"></i><u></u>&nbsp;复吸</span>
+          <span class="cal-legend"><i style="--a:.2"></i><i style="--a:.4"></i><i style="--a:.66"></i><i style="--a:1"></i><u></u>&nbsp;<span id="cal-legend-slip">复吸</span></span>
         </div>
       </div>
 
@@ -950,14 +1012,19 @@ html,body,.app,.land{transition:background-color .5s ease}
     <!-- 成就：一场灯会 -->
     <section class="view" id="view-awards" data-view="awards">
       <header class="page-top rise" style="--i:0"><h1 class="greet">成就</h1><small class="muted num" id="aw-count" style="font-size:13px;margin-bottom:5px"></small></header>
+      <div class="chips habit-chips rise" id="aw-habits" style="--i:0" hidden></div>
       <p class="sub rise" style="--i:1;margin-top:4px">每走过一段路，就点亮一盏灯。</p>
       <div class="lanterns rise" id="lanterns" style="--i:2"></div>
 
-      <div class="sec-head rise" style="--i:3"><h2 class="h2">心愿存钱罐</h2><small>用省下的钱去换</small></div>
-      <div class="wish rise" id="wish" style="--i:4"></div>
+      <!-- 心愿和「够买」用所有事省下的钱加在一起；一件要花钱的事都没有时，换成一句提示 -->
+      <div id="aw-money">
+        <div class="sec-head rise" style="--i:3"><h2 class="h2">心愿存钱罐</h2><small id="aw-wish-k">用省下的钱去换</small></div>
+        <div class="wish rise" id="wish" style="--i:4"></div>
 
-      <div class="sec-head rise" style="--i:5"><h2 class="h2">省下的钱，够买</h2></div>
-      <div class="buys rise" id="buys" style="--i:6"></div>
+        <div class="sec-head rise" style="--i:5"><h2 class="h2">省下的钱，够买</h2></div>
+        <div class="buys rise" id="buys" style="--i:6"></div>
+      </div>
+      <p class="hint rise" id="aw-money-hint" style="--i:3;margin-top:40px" hidden>在设置里填上「每次花的钱」，省下的钱就能拿来许个心愿。</p>
     </section>
 
     <!-- 设置 -->
@@ -973,24 +1040,45 @@ html,body,.app,.land{transition:background-color .5s ease}
         <div class="picks" id="pick-palette" role="radiogroup" aria-label="配色"></div>
       </div>
 
-      <div class="set-pig rise" style="--i:2"><i data-pig="" data-head></i><p>下面这些数字用来算账。改了以后，少抽的支数、省下的钱都会跟着重新算。</p></div>
+      <div class="set-pig rise" style="--i:2"><i data-pig="" data-head></i><p>下面这些数字用来算账。改了以后，计时、统计和成就都会跟着重新算。</p></div>
 
-      <div class="sec-head rise" style="--i:2"><h2 class="h2">基础数据</h2></div>
-      <div class="rows rise" style="--i:3">
-        <label class="row-item" id="set-date-row"><span>戒烟开始</span><input class="row-input num" type="datetime-local" id="set-date"></label>
-        <div class="row-note" id="set-anchor" hidden><span id="set-anchor-text"></span><button type="button" class="wish-link" id="set-anchor-undo">改为从戒烟开始算</button></div>
-        <div class="row-item"><span>每天抽</span>
-          <div class="stepper" data-min="1" data-max="200"><button type="button" data-d="-1" aria-label="减少">−</button><input class="num" id="set-perday" type="number" inputmode="numeric" aria-label="每天抽多少支"><button type="button" data-d="1" aria-label="增加">+</button><em>支</em></div>
+      <!-- 我在戒的事：点一件切换（下面的数据跟着换），最后一个是「再戒一件」 -->
+      <div class="sec-head rise" style="--i:2"><h2 class="h2">我在戒的事</h2><small>点一件，改它的数据</small></div>
+      <div class="chips habit-chips rise" id="set-habits" style="--i:2"></div>
+
+      <div class="rows rise" style="--i:3;margin-top:22px">
+        <label class="row-item" id="set-name-row"><span>名字</span><input class="row-input" type="text" id="set-name" maxlength="12" placeholder="那件事" autocomplete="off" enterkeyhint="done"></label>
+        <label class="row-item" id="set-date-row"><span id="set-date-k">戒烟开始</span><input class="row-input num" type="datetime-local" id="set-date"></label>
+        <div class="row-note" id="set-anchor" hidden><span id="set-anchor-text"></span><button type="button" class="wish-link" id="set-anchor-undo">改为从开始时间算</button></div>
+        <div class="set-group" data-kind="smoke">
+          <div class="row-item"><span>每天抽</span>
+            <div class="stepper" data-min="1" data-max="200"><button type="button" data-d="-1" aria-label="减少">−</button><input class="num" id="set-perday" type="number" inputmode="numeric" aria-label="每天抽多少支"><button type="button" data-d="1" aria-label="增加">+</button><em>支</em></div>
+          </div>
+          <div class="row-item"><span>每包</span>
+            <div class="stepper" data-min="1" data-max="100"><button type="button" data-d="-1" aria-label="减少">−</button><input class="num" id="set-perpack" type="number" inputmode="numeric" aria-label="每包多少支"><button type="button" data-d="1" aria-label="增加">+</button><em>支</em></div>
+          </div>
+          <div class="row-item"><span>每包价格</span>
+            <div class="price"><select class="row-select cur-select" id="set-currency" aria-label="货币"></select><input class="row-input num" id="set-price" type="number" inputmode="decimal" min="0" step="0.5" aria-label="每包价格"></div>
+          </div>
         </div>
-        <div class="row-item"><span>每包</span>
-          <div class="stepper" data-min="1" data-max="100"><button type="button" data-d="-1" aria-label="减少">−</button><input class="num" id="set-perpack" type="number" inputmode="numeric" aria-label="每包多少支"><button type="button" data-d="1" aria-label="增加">+</button><em>支</em></div>
+        <div class="set-group" data-kind="custom" hidden>
+          <div class="row-item"><span>按什么算</span>
+            <div class="seg seg-sm" id="set-period" role="radiogroup" aria-label="按天还是按周算"><button type="button" data-period="day" role="radio">按天</button><button type="button" data-period="week" role="radio">按周</button></div>
+          </div>
+          <div class="row-item"><span id="set-freq-k">每天大约</span>
+            <div class="stepper" data-min="1" data-max="99"><button type="button" data-d="-1" aria-label="减少">−</button><input class="num" id="set-freq" type="number" inputmode="numeric" aria-label="大约几次"><button type="button" data-d="1" aria-label="增加">+</button><em>次</em></div>
+          </div>
+          <div class="row-item"><span>每次花掉</span>
+            <div class="stepper" data-min="0" data-max="600"><button type="button" data-d="-5" aria-label="减少 5 分钟">−</button><input class="num" id="set-minutes" type="number" inputmode="numeric" aria-label="每次花掉多少分钟"><button type="button" data-d="5" aria-label="增加 5 分钟">+</button><em>分钟</em></div>
+          </div>
+          <div class="row-item"><span>每次花的钱</span>
+            <div class="price"><select class="row-select cur-select" id="set-currency-c" aria-label="货币"></select><input class="row-input num" id="set-cost" type="number" inputmode="decimal" min="0" step="1" aria-label="每次花的钱"></div>
+          </div>
         </div>
-        <div class="row-item"><span>每包价格</span>
-          <div class="price"><select class="row-select" id="set-currency" aria-label="货币"></select><input class="row-input num" id="set-price" type="number" inputmode="decimal" min="0" step="0.5" aria-label="每包价格"></div>
-        </div>
-        <label class="row-item row-col"><span>戒烟理由</span><textarea class="row-area" id="set-reason" rows="2" maxlength="60" placeholder="写一句给自己的话"></textarea></label>
+        <label class="row-item row-col"><span id="set-reason-k">戒烟理由</span><textarea class="row-area" id="set-reason" rows="2" maxlength="60" placeholder="写一句给自己的话"></textarea></label>
       </div>
       <p class="hint rise" style="--i:4">改动会立刻保存，首页的计时、统计和成就也会马上重新计算。</p>
+      <button type="button" class="btn btn-text set-delete rise" id="set-delete" style="--i:4" hidden></button>
 
       <div class="sec-head rise" style="--i:5"><h2 class="h2">数据</h2><small>只存在这台设备上</small></div>
       <div class="list rise" style="--i:6">
@@ -1059,7 +1147,7 @@ html,body,.app,.land{transition:background-color .5s ease}
         <button type="button" data-reset="1">从现在重新开始</button>
       </div>
       <div class="cv-form">
-        <h4><span>烟瘾有多强 <span class="muted">· 可选</span></span><em id="cv-int-label">未记录</em></h4>
+        <h4><span><span id="cv-int-k">烟瘾</span>有多强 <span class="muted">· 可选</span></span><em id="cv-int-label">未记录</em></h4>
         <input class="range is-unset" id="cv-intensity" type="range" min="1" max="5" step="1" value="3" aria-label="烟瘾强度，1 到 5">
         <h4><span>当时的场景 <span class="muted">· 可选</span></span></h4>
         <div class="chips" id="cv-tags"></div>
@@ -1132,12 +1220,11 @@ function haptic(pattern = 10) {
 }
 
 /* ============================================================
-   1. 静态内容：货币、恢复节点、成就
+   1. 静态内容：货币、两类「要戒的事」、节点、成就
    ============================================================ */
 const CURRENCIES = [['CNY', '¥', '人民币'], ['HKD', 'HK$', '港币'], ['TWD', 'NT$', '新台币'], ['USD', '$', '美元'], ['AUD', 'A$', '澳元'], ['EUR', '€', '欧元'], ['GBP', '£', '英镑'], ['JPY', 'JP¥', '日元']];
-const DEFAULT_TAGS = ['饭后', '压力', '社交', '喝酒', '无聊'];
 
-/* 身体恢复节点：ms 为点亮这盏灯所需的戒烟时长 */
+/* 戒烟：身体恢复节点。ms 为点亮这盏灯所需的时长 */
 const HEALTH = [
   { ms: 20 * MIN, when: '20 分钟', title: '心率和血压开始回落', desc: '身体最先察觉到变化，手脚的温度慢慢回升。' },
   { ms: 12 * HOUR, when: '12 小时', title: '一氧化碳恢复正常', desc: '血液里的一氧化碳降回正常水平，氧气重新占了上风。' },
@@ -1152,78 +1239,131 @@ const HEALTH = [
   { ms: 15 * 365 * DAY, when: '15 年', title: '像从未吸过烟一样', desc: '冠心病风险接近从不吸烟的人。' },
 ];
 
-/* 成就（灯笼）：ms = 按计时时长点亮；wins = 按扛住的次数点亮 */
-const BADGES = [
-  { id: 'd1', ms: DAY, n: '1', u: '天', title: '第一天', desc: '万事开头难。最难的开头，你过完了。' },
-  { id: 'd3', ms: 3 * DAY, n: '3', u: '天', title: '三天', desc: '尼古丁基本离开了身体。接下来，你说了算。' },
-  { id: 'w1', ms: 7 * DAY, n: '7', u: '天', title: '一周', desc: '整整一周。很多人没走到这里，你走到了。' },
-  { id: 'w2', ms: 14 * DAY, n: '14', u: '天', title: '两周', desc: '循环开始改善，身体在悄悄谢谢你。' },
-  { id: 'm1', ms: 30 * DAY, n: '30', u: '天', title: '一个月', desc: '一个月。新的习惯，已经有了形状。' },
-  { id: 'd100', ms: 100 * DAY, n: '100', u: '天', title: '百日', desc: '一百天。这已经不是尝试，是你的生活。' },
-  { id: 'm6', ms: 182 * DAY, n: '半', u: '年', title: '半年', desc: '半年的干净呼吸。请为自己骄傲。' },
-  { id: 'y1', ms: 365 * DAY, n: '1', u: '年', title: '一周年', desc: '一整年。冠心病的额外风险，已经减半。' },
-  { id: 'v1', wins: 1, n: '1', u: '胜', title: '第一次扛住', desc: '你证明了一件事：烟瘾会过去，而你还在。' },
-  { id: 'v10', wins: 10, n: '10', u: '胜', title: '十次胜利', desc: '十次想抽，十次没抽。这就是实力。' },
-  { id: 'v30', wins: 30, n: '30', u: '胜', title: '三十次胜利', desc: '浪头一次次打来，你一次次站住。' },
-  { id: 'v50', wins: 50, n: '50', u: '胜', title: '五十次胜利', desc: '五十次。烟瘾已经不太认识你了。' },
+/* 别的事：没有通用的身体节点，换成一条「改变之路」。
+   66 天出自 Lally 等人（伦敦大学学院）的习惯养成研究：中位数约 66 天，个体差异很大 */
+const PATH = [
+  { ms: DAY, when: '1 天', title: '迈出了第一步', desc: '第一天往往最长。你把它过完了。' },
+  { ms: 3 * DAY, when: '3 天', title: '最初的拉扯在变弱', desc: '「就一次」的念头，常常在头几天最响，之后会慢慢安静下来。' },
+  { ms: 7 * DAY, when: '1 周', title: '第一段完整的节奏', desc: '一整周没被它带走。你开始知道，没有它的日子也过得下去。' },
+  { ms: 14 * DAY, when: '2 周', title: '精力开始流回来', desc: '原本被它占掉的时间和注意力，开始回到别的事情上。' },
+  { ms: 30 * DAY, when: '1 个月', title: '新的安排有了形状', desc: '留意一下，空出来的时间，你都用在了哪里。' },
+  { ms: 66 * DAY, when: '66 天', title: '新习惯开始变得自然', desc: '有研究发现，一个新习惯一般要 66 天左右才会变得自然。新的样子，正在变成默认。' },
+  { ms: 100 * DAY, when: '100 天', title: '这已经是你的生活', desc: '一百天。现在的你，已经不需要每天提醒自己了。' },
+  { ms: 182 * DAY, when: '半年', title: '回头看看', desc: '半年前让你挣扎的那些时刻，现在多半已经想不起来了。' },
+  { ms: 365 * DAY, when: '1 年', title: '四季都走了一遍', desc: '每一个节日、每一种场合，你都试过了：没有它，也能过得很好。' },
 ];
 
-/* 月亮轨道的「下一站」= 恢复节点 + 按时长点亮的灯笼，按时长排序去重 */
-const MILES = (() => {
+/* 成就（灯笼）：ms = 按计时时长点亮；wins = 按扛住的次数点亮。g = 「别的事」用的说法（没有就和戒烟共用） */
+const BADGES = [
+  { id: 'd1', ms: DAY, n: '1', u: '天', title: '第一天', desc: '万事开头难。最难的开头，你过完了。' },
+  { id: 'd3', ms: 3 * DAY, n: '3', u: '天', title: '三天', desc: '尼古丁基本离开了身体。接下来，你说了算。', g: '最初的那股劲过去了。接下来，你说了算。' },
+  { id: 'w1', ms: 7 * DAY, n: '7', u: '天', title: '一周', desc: '整整一周。很多人没走到这里，你走到了。' },
+  { id: 'w2', ms: 14 * DAY, n: '14', u: '天', title: '两周', desc: '循环开始改善，身体在悄悄谢谢你。', g: '两周。新的节奏，开始站稳了。' },
+  { id: 'm1', ms: 30 * DAY, n: '30', u: '天', title: '一个月', desc: '一个月。新的习惯，已经有了形状。' },
+  { id: 'd100', ms: 100 * DAY, n: '100', u: '天', title: '百日', desc: '一百天。这已经不是尝试，是你的生活。' },
+  { id: 'm6', ms: 182 * DAY, n: '半', u: '年', title: '半年', desc: '半年的干净呼吸。请为自己骄傲。', g: '半年。请为自己骄傲。' },
+  { id: 'y1', ms: 365 * DAY, n: '1', u: '年', title: '一周年', desc: '一整年。冠心病的额外风险，已经减半。', g: '一整年。你把一件难事，过成了日常。' },
+  { id: 'v1', wins: 1, n: '1', u: '胜', title: '第一次扛住', desc: '你证明了一件事：烟瘾会过去，而你还在。', g: '你证明了一件事：冲动会过去，而你还在。' },
+  { id: 'v10', wins: 10, n: '10', u: '胜', title: '十次胜利', desc: '十次想抽，十次没抽。这就是实力。', g: '十次想要，十次没做。这就是实力。' },
+  { id: 'v30', wins: 30, n: '30', u: '胜', title: '三十次胜利', desc: '浪头一次次打来，你一次次站住。' },
+  { id: 'v50', wins: 50, n: '50', u: '胜', title: '五十次胜利', desc: '五十次。烟瘾已经不太认识你了。', g: '五十次。那股冲动已经不太认识你了。' },
+];
+const badgeDesc = (b, kind) => (kind === 'smoke' ? b.desc : b.g || b.desc);
+
+/* 两类「要戒的事」：各用各的文案、触发场景和节点 */
+const KINDS = {
+  smoke: {
+    label: '已戒烟', crave: '我想抽烟', when: '想抽烟', urge: '烟瘾', slip: '复吸', clean: '连续未复吸', map: '烟瘾星图', road: '恢复之路',
+    tags: ['饭后', '压力', '社交', '喝酒', '无聊'], timeline: HEALTH,
+  },
+  custom: {
+    label: '已坚持', crave: '冲动来了', when: '冲动来', urge: '冲动', slip: '没忍住', clean: '连续没碰', map: '冲动星图', road: '改变之路',
+    tags: ['无聊', '压力', '深夜', '独处', '疲惫'], timeline: PATH,
+  },
+};
+
+/* 月亮轨道的「下一站」= 这一类的节点 + 按时长点亮的灯笼，按时长排序去重 */
+const MILES = {};
+function miles(kind) {
+  if (MILES[kind]) return MILES[kind];
   const map = new Map();
   BADGES.filter(b => b.ms).forEach(b => map.set(b.ms, { ms: b.ms, when: `${b.n} ${b.u}`.replace('半 年', '半年'), title: `点亮「${b.title}」灯笼` }));
-  HEALTH.forEach(h => map.set(h.ms, { ms: h.ms, when: h.when.split(' – ')[0].replace(/^1$/, '1 个月'), title: h.title }));
-  return [...map.values()].sort((a, b) => a.ms - b.ms);
-})();
+  KINDS[kind].timeline.forEach(h => map.set(h.ms, { ms: h.ms, when: h.when.split(' – ')[0].replace(/^1$/, '1 个月'), title: h.title }));
+  return (MILES[kind] = [...map.values()].sort((a, b) => a.ms - b.ms));
+}
 
 /* ============================================================
    2. 数据层：全部存在 localStorage 的一个键里
-   结构（version 用于以后迁移）：
+   结构（version 用于以后迁移；第 1 版只有一个戒烟的 profile，读入时自动升级成第 2 版）：
    {
-     version: 1,
-     profile:  { quitAt, perDay, perPack, packPrice, currency, reason, createdAt } | null,
-     events:   [{ id, t, type: 'win' | 'slip', intensity: 1-5 | null, tags: [], reset: bool }],
-     customTags: [],                  // 用户自定义的触发场景
-     wish:     { name, price } | null, // 心愿物品
-     unlocked: { 成就id: 解锁时间戳 },
-     look:     { mascot, palette }    // 外观：角色、配色（空 = 默认）
+     version: 2,
+     habits:   [{ id, kind: 'smoke' | 'custom', name, quitAt, reason, createdAt,
+                  perDay, perPack, packPrice,       // 戒烟：每天几支、每包几支、每包价格
+                  freq, period, cost, minutes }],   // 别的事：每天 / 每周几次，每次花的钱和分钟
+     current:  正在看的那件事的 id,
+     currency: 'CNY',                   // 货币（几件事共用）
+     events:   [{ id, habit, t, type: 'win' | 'slip', intensity: 1-5 | null, tags: [], reset: bool }],
+     customTags: [],                    // 用户自定义的触发场景
+     wish:     { name, price } | null,  // 心愿物品（几件事省下的钱加在一起）
+     unlocked: { 事的 id: { 成就 id: 解锁时间戳 } },
+     look:     { mascot, palette }      // 外观：角色、配色（空 = 默认）
    }
    ============================================================ */
-const KEY = 'qingxi.v1';
-const blank = () => ({ version: 1, profile: null, events: [], customTags: [], wish: null, unlocked: {}, look: { mascot: '', palette: '' } });
+const KEY = 'qingxi.v1';   // 键名沿用第 1 版：升级后数据原地保留
+const MAX_HABITS = 6;
+const blank = () => ({ version: 2, habits: [], current: '', currency: 'CNY', events: [], customTags: [], wish: null, unlocked: {}, look: { mascot: '', palette: '' } });
 
-/* 读入任何来源的数据（本地 / 导入的备份）都先过一遍校验，坏字段回落到默认值 */
+/* 校验一件事；不认识的字段回落到默认值 */
+function normHabit(p) {
+  if (!p || typeof p !== 'object' || !Number.isFinite(+p.quitAt)) return null;
+  const h = { id: String(p.id || 'h' + uid()).slice(0, 24), kind: p.kind === 'custom' ? 'custom' : 'smoke', quitAt: +p.quitAt, reason: String(p.reason || '').slice(0, 60), createdAt: +p.createdAt || now() };
+  if (h.kind === 'smoke') Object.assign(h, { name: '抽烟', perDay: clamp(+p.perDay || 20, 1, 200), perPack: clamp(+p.perPack || 20, 1, 100), packPrice: Math.max(0, +p.packPrice || 0) });
+  else Object.assign(h, {
+    name: String(p.name || '').trim().slice(0, 12) || '那件事',
+    freq: clamp(Math.round(+p.freq) || 1, 1, 99), period: p.period === 'week' ? 'week' : 'day',
+    cost: Math.max(0, +p.cost || 0), minutes: clamp(Math.round(+p.minutes) || 0, 0, 1440),
+  });
+  return h;
+}
+
+/* 读入任何来源的数据（本地 / 导入的备份，第 1 版或第 2 版）都先过一遍校验 */
 function normalize(d) {
   const s = blank();
   if (!d || typeof d !== 'object') return s;
-  const p = d.profile;
-  if (p && Number.isFinite(+p.quitAt)) {
-    s.profile = {
-      quitAt: +p.quitAt,
-      perDay: clamp(+p.perDay || 20, 1, 200),
-      perPack: clamp(+p.perPack || 20, 1, 100),
-      packPrice: Math.max(0, +p.packPrice || 0),
-      currency: CURRENCIES.some(c => c[0] === p.currency) ? p.currency : 'CNY',
-      reason: String(p.reason || '').slice(0, 60),
-      createdAt: +p.createdAt || now(),
-    };
+  const v1 = !Array.isArray(d.habits);
+  const list = v1 ? (d.profile ? [{ ...d.profile, id: 'smoke', kind: 'smoke' }] : []) : d.habits;
+  for (const p of list) {
+    const h = normHabit(p);
+    if (!h || s.habits.length >= MAX_HABITS || s.habits.some(x => x.id === h.id)) continue;
+    if (h.kind === 'smoke' && s.habits.some(x => x.kind === 'smoke')) continue;   // 戒烟只算一件
+    s.habits.push(h);
   }
+  const ids = new Set(s.habits.map(h => h.id)), first = s.habits.length ? s.habits[0].id : '';
+  const cur0 = v1 ? d.profile && d.profile.currency : d.currency;
+  s.currency = CURRENCIES.some(c => c[0] === cur0) ? cur0 : 'CNY';
+  s.current = ids.has(d.current) ? d.current : first;
   if (Array.isArray(d.events)) {
     s.events = d.events
       .filter(e => e && Number.isFinite(+e.t) && (e.type === 'win' || e.type === 'slip'))
       .map(e => ({
-        id: String(e.id || uid()), t: +e.t, type: e.type,
+        id: String(e.id || uid()), habit: v1 || e.habit == null ? first : String(e.habit), t: +e.t, type: e.type,
         intensity: e.intensity ? clamp(Math.round(+e.intensity), 1, 5) : null,
         tags: Array.isArray(e.tags) ? e.tags.map(t => String(t).slice(0, 8)).slice(0, 8) : [],
         reset: !!e.reset,
       }))
+      .filter(e => ids.has(e.habit))
       .sort((a, b) => a.t - b.t);
   }
   if (Array.isArray(d.customTags)) s.customTags = [...new Set(d.customTags.map(t => String(t).slice(0, 8)).filter(Boolean))].slice(0, 12);
   if (d.wish && d.wish.name && +d.wish.price > 0) s.wish = { name: String(d.wish.name).slice(0, 20), price: +d.wish.price };
   if (d.look && typeof d.look === 'object') s.look = { mascot: String(d.look.mascot || '').slice(0, 24), palette: String(d.look.palette || '').slice(0, 24) };
   if (d.unlocked && typeof d.unlocked === 'object') {
-    for (const k of Object.keys(d.unlocked)) if (Number.isFinite(+d.unlocked[k])) s.unlocked[k] = +d.unlocked[k];
+    const src = v1 ? { [first]: d.unlocked } : d.unlocked;
+    for (const id of Object.keys(src)) {
+      if (!ids.has(id) || !src[id] || typeof src[id] !== 'object') continue;
+      s.unlocked[id] = {};
+      for (const k of Object.keys(src[id])) if (Number.isFinite(+src[id][k])) s.unlocked[id][k] = +src[id][k];
+    }
   }
   return s;
 }
@@ -1239,41 +1379,58 @@ function save() {
 }
 let state = load();
 
-/* ---------- 由数据推导出来的量（不另外存储，避免不一致） ---------- */
-const curSymbol = () => (CURRENCIES.find(c => c[0] === state.profile.currency) || CURRENCIES[0])[1];
-const slips = () => state.events.filter(e => e.type === 'slip');
-const wins = () => state.events.filter(e => e.type === 'win');
+/* ---------- 由数据推导出来的量（不另外存储，避免不一致）。h 不传 = 正在看的那件事 ---------- */
+const curHabit = () => state.habits.find(h => h.id === state.current) || state.habits[0] || null;
+const kindOf = (h = curHabit()) => KINDS[h && h.kind === 'custom' ? 'custom' : 'smoke'];
+const habitTitle = (h = curHabit()) => (h.kind === 'smoke' ? '戒烟' : h.name);
+const curSymbol = () => (CURRENCIES.find(c => c[0] === state.currency) || CURRENCIES[0])[1];
+const evs = (h = curHabit()) => state.events.filter(e => e.habit === h.id);
+const slips = (h = curHabit()) => evs(h).filter(e => e.type === 'slip');
+const wins = (h = curHabit()) => evs(h).filter(e => e.type === 'win');
 
-/* 计时起点：最近一次选择「重新开始」的复吸；没有的话就是戒烟开始时间 */
-function timerStart() {
-  let t = state.profile.quitAt;
-  for (const e of state.events) if (e.type === 'slip' && e.reset && e.t > t) t = e.t;
+/* 计时起点：最近一次选择「重新开始」的复吸；没有的话就是开始时间 */
+function timerStart(h = curHabit()) {
+  let t = h.quitAt;
+  for (const e of evs(h)) if (e.type === 'slip' && e.reset && e.t > t) t = e.t;
   return t;
 }
-const elapsed = () => Math.max(0, now() - timerStart());
+const elapsed = (h = curHabit()) => Math.max(0, now() - timerStart(h));
 
 /* 计时曾经连续走过的最长一段（以「从现在重新开始」的复吸分段）。时长类成就以它为准：
    改早了开始时间、或者以前有过一段很长的坚持，对应的灯都会亮 */
-function timerBest() {
-  const p = state.profile, n = now();
-  const pts = [p.quitAt, ...state.events.filter(e => e.type === 'slip' && e.reset && e.t > p.quitAt && e.t < n).map(e => e.t), n];
+function timerBest(h = curHabit()) {
+  const n = now();
+  const pts = [h.quitAt, ...evs(h).filter(e => e.type === 'slip' && e.reset && e.t > h.quitAt && e.t < n).map(e => e.t), n];
   let best = 0;
   for (let i = 1; i < pts.length; i++) best = Math.max(best, pts[i] - pts[i - 1]);
   return best;
 }
 
-/* 少抽的支数：从戒烟那一刻算起，每次复吸只扣一支 —— 走过的路不会因为一次跌倒清零 */
-function totals() {
-  const p = state.profile;
-  const days = Math.max(0, now() - p.quitAt) / DAY;
-  const cigs = Math.max(0, days * p.perDay - slips().filter(e => e.t >= p.quitAt).length);
-  return { cigs, money: cigs * (p.packPrice / p.perPack), lifeMin: cigs * 11, perDayMoney: p.perDay * (p.packPrice / p.perPack) };
+/* 以前每天几次、每次多少钱 */
+const perDayOf = h => (h.kind === 'smoke' ? h.perDay : h.period === 'week' ? h.freq / 7 : h.freq);
+const unitCost = h => (h.kind === 'smoke' ? h.packPrice / h.perPack : h.cost);
+
+/* 少了的次数（戒烟就是支数）：从开始那一刻算起，每次复吸只扣一次 —— 走过的路不会因为一次跌倒清零 */
+function totals(h = curHabit()) {
+  const days = Math.max(0, now() - h.quitAt) / DAY;
+  const count = Math.max(0, days * perDayOf(h) - slips(h).filter(e => e.t >= h.quitAt).length);
+  return {
+    count, money: count * unitCost(h), perDayMoney: perDayOf(h) * unitCost(h),
+    lifeMin: h.kind === 'smoke' ? count * 11 : 0,          // 戒烟：每支烟约 11 分钟生命
+    timeMin: h.kind === 'smoke' ? 0 : count * h.minutes,   // 别的事：每次花掉的时间
+  };
+}
+/* 心愿和「够买」用几件事省下的钱加在一起 */
+function moneyAll() {
+  let money = 0, perDayMoney = 0;
+  for (const h of state.habits) { const t = totals(h); money += t.money; perDayMoney += t.perDayMoney; }
+  return { money, perDayMoney, any: state.habits.some(h => unitCost(h) > 0) };
 }
 
-/* 连续未复吸时长 / 最长纪录 */
-function streaks() {
-  const p = state.profile, n = now();
-  const pts = [p.quitAt, ...slips().map(e => e.t).filter(t => t > p.quitAt && t < n), n];
+/* 连续没碰的时长 / 最长纪录 */
+function streaks(h = curHabit()) {
+  const n = now();
+  const pts = [h.quitAt, ...slips(h).map(e => e.t).filter(t => t > h.quitAt && t < n), n];
   let best = 0;
   for (let i = 1; i < pts.length; i++) best = Math.max(best, pts[i] - pts[i - 1]);
   return { current: Math.max(0, n - pts[pts.length - 2]), best };
@@ -1576,14 +1733,20 @@ scatterStars();
 
 
 /* ============================================================
-   5. 首次引导
+   5. 首次引导（「再戒一件事」也走这里：跳过欢迎页，从第一步开始）
    ============================================================ */
 const Onboard = (() => {
   const root = $('#onboard'), steps = $$('.ob-step', root), dots = $$('#ob-progress i');
-  const next = $('#ob-next'), back = $('#ob-back'), date = $('#ob-date'), reason = $('#ob-reason');
+  const next = $('#ob-next'), back = $('#ob-back'), date = $('#ob-date'), reason = $('#ob-reason'), nameEl = $('#ob-name');
   const LAST = steps.length - 1;
-  const draft = { quitAt: now(), perDay: 20, perPack: 20, packPrice: 25, currency: 'CNY', reason: '' };
-  let step = 0;
+  /* 第四步的快捷句 */
+  const REASONS = {
+    smoke: [['为了家人', '想陪家人久一点。'], ['为了身体', '想重新跑起来不喘。'], ['为了自由', '不想再被一根烟牵着走。']],
+    custom: [['为了专注', '把精力留给更重要的事。'], ['为了时间', '想把时间还给自己。'], ['为了自由', '不想再被它牵着走。']],
+  };
+  const fresh = () => ({ kind: '', name: '', quitAt: now(), perDay: 20, perPack: 20, packPrice: 25, freq: 1, period: 'day', minutes: 30, cost: 0, currency: state.currency || 'CNY', reason: '' });
+  let draft = fresh(), step = 0, adding = false;
+  const isCustom = () => draft.kind === 'custom';
 
   /* 日期那一行：把选中的时间说成人话 */
   function showWhen() {
@@ -1601,19 +1764,57 @@ const Onboard = (() => {
   /* 每一步离开前校验，并把值收进 draft */
   function collect() {
     if (step === 1) {
+      if (!draft.kind) { toast('先选一个吧'); return false; }
+      if (isCustom()) {
+        const name = nameEl.value.trim().slice(0, 12);
+        if (!name) { toast('给它起个名字吧，叫「那件事」也行'); return false; }
+        if (state.habits.some(h => h.kind === 'custom' && h.name === name)) { toast(`已经在戒「${name}」了`); return false; }
+        draft.name = name;
+      }
+    }
+    if (step === 2) {
       const t = fromLocalInput(date.value);
       if (!t) { toast('先选一个时间吧'); return false; }
       if (t > now() + MIN) { toast('那个时刻还没到，选一个已经过去的时间'); return false; }
       draft.quitAt = Math.min(t, now());
     }
-    if (step === 2) {
+    if (step === 3 && !isCustom()) {
       const d = +$('#ob-perday').value, k = +$('#ob-perpack').value, p = +$('#ob-price').value;
       if (!(d >= 1) || !(k >= 1)) { toast('支数至少是 1'); return false; }
       if (!(p >= 0) || $('#ob-price').value === '') { toast('填一下每包的价格'); return false; }
       Object.assign(draft, { perDay: clamp(Math.round(d), 1, 200), perPack: clamp(Math.round(k), 1, 100), packPrice: p, currency: $('#ob-currency').value });
     }
-    if (step === 3) draft.reason = reason.value.trim().slice(0, 60);
+    if (step === 3 && isCustom()) {
+      const f = +$('#ob-freq').value, m = +$('#ob-minutes').value, c = +$('#ob-cost').value;
+      if (!(f >= 1)) { toast('次数至少是 1'); return false; }
+      if (!(m >= 0) || !(c >= 0)) { toast('不确定就填 0，以后可以在设置里改'); return false; }
+      Object.assign(draft, { freq: clamp(Math.round(f), 1, 99), minutes: clamp(Math.round(m), 0, 600), cost: c, currency: $('#ob-currency-c').value });
+    }
+    if (step === 4) draft.reason = reason.value.trim().slice(0, 60);
     return true;
+  }
+
+  /* 进入某一步时，按「戒什么」换上对应的文案和输入项 */
+  function prepare(n) {
+    const c = isCustom();
+    if (n === 2) {
+      $('#ob-when-title').innerHTML = c ? `上一次「${esc(draft.name)}」，<br>是什么时候？` : '最后一支烟，<br>是什么时候？';
+      showWhen();
+    }
+    if (n === 3) {
+      $('#ob-nums-title').innerHTML = c ? '以前的你，<br>大概多久一次？' : '以前的你，<br>是怎么抽的？';
+      $('#ob-nums-sub').textContent = c
+        ? '只用来算你少了几次、腾出多少时间和钱。不确定就估一个，填 0 也行。这些数字不会离开这台手机。'
+        : '只用来算你少抽了多少、省下了多少。这些数字不会离开这台手机。';
+      $$('.rows[data-kind]', steps[3]).forEach(r => { r.hidden = r.dataset.kind !== (c ? 'custom' : 'smoke'); });
+      $('#ob-currency').value = $('#ob-currency-c').value = draft.currency;
+    }
+    if (n === 4) {
+      reason.placeholder = c ? '比如：把精力留给更重要的事。' : '比如：想陪女儿长大。';
+      $('#ob-reasons').innerHTML = REASONS[c ? 'custom' : 'smoke']
+        .map(([label, text]) => `<button type="button" class="chip${reason.value === text ? ' is-on' : ''}" data-reason="${esc(text)}">${label}</button>`).join('');
+    }
+    if (n === LAST) summary();
   }
 
   function go(n, quiet) {
@@ -1622,45 +1823,88 @@ const Onboard = (() => {
     step = n;
     steps.forEach((s, i) => { s.classList.toggle('is-active', i === n); s.classList.toggle('is-prev', i < n); });
     dots.forEach((d, i) => d.classList.toggle('is-done', i < n));
+    const cancel = adding && n === 1;   // 「再戒一件事」的第一步，返回键就是取消
     back.style.visibility = n > 0 ? 'visible' : 'hidden';
-    next.textContent = ['开始', '下一步', '下一步', '下一步', '开始新的呼吸'][n];
-    if (n === 1) showWhen();
-    if (n === LAST) summary();
+    back.setAttribute('aria-label', cancel ? '取消' : '上一步');
+    back.innerHTML = icon(cancel ? 'x' : 'back');
+    next.textContent = n === 0 ? '开始' : n < LAST ? '下一步' : adding ? '加上这件事' : isCustom() ? '就从这里开始' : '开始新的呼吸';
+    prepare(n);
     if (!quiet) haptic(8);
   }
 
   function summary() {
     const el = now() - draft.quitAt, sym = (CURRENCIES.find(c => c[0] === draft.currency) || CURRENCIES[0])[1];
-    const perDayMoney = draft.perDay * draft.packPrice / draft.perPack;
+    const row = (k, v) => `<div><span>${k}</span><b>${v}</b></div>`;
     $('#ob-sum-title').innerHTML = el < MIN
       ? '新的一页，<br><span class="grad-text">从这一秒开始</span>'
-      : `你已经戒了<br><span class="grad-text num">${human(el)}</span>`;
-    $('#ob-sum').innerHTML = `
-      <div><span>每天不再点燃</span><b>${draft.perDay} 支</b></div>
-      <div><span>每个月省下</span><b>${sym}${nf(perDayMoney * 30)}</b></div>
-      <div><span>每年找回生命</span><b>${nf(draft.perDay * 11 * 365 / 60 / 24)} 天</b></div>`;
+      : `你已经${isCustom() ? '坚持' : '戒'}了<br><span class="grad-text num">${human(el)}</span>`;
+    if (!isCustom()) {
+      const perDayMoney = draft.perDay * draft.packPrice / draft.perPack;
+      $('#ob-sum').innerHTML = row('每天不再点燃', `${draft.perDay} 支`) + row('每个月省下', `${sym}${nf(perDayMoney * 30)}`)
+        + row('每年找回生命', `${nf(draft.perDay * 11 * 365 / 60 / 24)} 天`);
+      return;
+    }
+    const perDay = draft.period === 'week' ? draft.freq / 7 : draft.freq, monthMin = perDay * 30 * draft.minutes;
+    $('#ob-sum').innerHTML = row(`不再「${esc(draft.name)}」`, `${draft.period === 'week' ? '每周' : '每天'} ${draft.freq} 次`)
+      + (draft.minutes ? row('每个月腾出', monthMin >= 60 ? `${nf(monthMin / 60, monthMin < 600 ? 1 : 0)} 小时` : `${nf(monthMin)} 分钟`) : '')
+      + (draft.cost ? row('每个月省下', `${sym}${nf(perDay * 30 * draft.cost)}`) : '');
   }
 
-  function finish() {
-    state.profile = { ...draft, createdAt: now() };
-    save();
-    haptic([14, 60, 24]);
+  /* 收起引导层（完成或取消） */
+  function leave() {
     root.classList.add('is-leaving');
-    App.enterMain();
-    setTimeout(() => { root.hidden = true; root.classList.remove('is-leaving'); }, REDUCED ? 0 : 800);
+    setTimeout(() => { root.hidden = true; root.classList.remove('is-leaving', 'is-adding'); }, REDUCED ? 0 : 800);
+  }
+  function finish() {
+    const h = normHabit({ ...draft, id: 'h' + uid(), createdAt: now() });
+    state.habits.push(h); state.current = h.id; state.currency = draft.currency;
+    save(); haptic([14, 60, 24]);
+    if (adding) { App.setHabit(h.id); showTab('home', true); toast(`「${habitTitle(h)}」也加上了。在月亮上左右滑，可以切换。`); }
+    else App.enterMain();
+    leave();
   }
 
-  function show() {
-    root.hidden = false;
+  function setPeriod(p) {
+    draft.period = p;
+    $$('#ob-period button').forEach(b => { const on = b.dataset.period === p; b.classList.toggle('is-on', on); b.setAttribute('aria-checked', on); });
+    $('#ob-freq-k').textContent = p === 'week' ? '每周大约' : '每天大约';
+  }
+
+  /* opts.add：已经有在戒的事，再加一件 */
+  function show(opts = {}) {
+    adding = !!opts.add && state.habits.length > 0;
+    draft = fresh(); step = 0;
+    root.hidden = false; root.classList.remove('is-leaving'); root.classList.toggle('is-adding', adding);
     date.max = toLocalInput(now()); date.value = toLocalInput(now());
     reason.value = ''; $('#ob-reason-n').textContent = '0 / 60';
+    nameEl.value = ''; $('#ob-name-box').hidden = true;
+    const hasSmoke = state.habits.some(h => h.kind === 'smoke');   // 戒烟只能有一件
+    $$('.kind', root).forEach(b => { b.classList.remove('is-on'); b.setAttribute('aria-checked', 'false'); b.disabled = b.dataset.kind === 'smoke' && hasSmoke; });
+    $('#ob-perday').value = 20; $('#ob-perpack').value = 20; $('#ob-price').value = 25;
+    $('#ob-freq').value = 1; $('#ob-minutes').value = 30; $('#ob-cost').value = 0;
+    setPeriod('day');
     $$('.chip.is-on', root).forEach(c => c.classList.remove('is-on'));
-    go(0, true);
+    go(adding ? 1 : 0, true);
   }
 
   /* 事件 */
   next.addEventListener('click', () => go(step + 1));
-  back.addEventListener('click', () => go(step - 1));
+  back.addEventListener('click', () => { if (adding && step === 1) { leave(); haptic(6); } else go(step - 1); });
+  $('#ob-kinds').addEventListener('click', e => {
+    const b = e.target.closest('[data-kind]'); if (!b || b.disabled) return;
+    draft.kind = b.dataset.kind;
+    $$('.kind', root).forEach(x => { const on = x === b; x.classList.toggle('is-on', on); x.setAttribute('aria-checked', on); });
+    $('#ob-name-box').hidden = draft.kind !== 'custom';
+    haptic(6);
+  });
+  $('#ob-names').addEventListener('click', e => {
+    const b = e.target.closest('[data-name]'); if (!b) return;
+    nameEl.value = b.dataset.name;
+    $$('.chip', e.currentTarget).forEach(c => c.classList.toggle('is-on', c === b)); haptic(6);
+  });
+  nameEl.addEventListener('input', () => $$('#ob-names .chip').forEach(c => c.classList.toggle('is-on', c.dataset.name === nameEl.value.trim())));
+  nameEl.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); nameEl.blur(); go(step + 1); } });
+  $('#ob-period').addEventListener('click', e => { const b = e.target.closest('[data-period]'); if (b) { setPeriod(b.dataset.period); haptic(6); } });
   $('#ob-quick').addEventListener('click', e => {
     const b = e.target.closest('[data-quick]'); if (!b) return;
     const d = new Date();
@@ -1677,7 +1921,8 @@ const Onboard = (() => {
   reason.addEventListener('input', () => { $('#ob-reason-n').textContent = `${reason.value.length} / 60`; });
   $('#ob-reasons').addEventListener('click', e => {
     const b = e.target.closest('[data-reason]'); if (!b) return;
-    reason.value = b.dataset.reason; reason.dispatchEvent(new Event('input')); haptic(6);
+    reason.value = b.dataset.reason; reason.dispatchEvent(new Event('input'));
+    $$('.chip', e.currentTarget).forEach(c => c.classList.toggle('is-on', c === b)); haptic(6);
   });
   /* 步进器（引导页与设置页通用） */
   document.addEventListener('click', e => {
@@ -1710,38 +1955,101 @@ function showTab(name, silent) {
 $('#tabbar').addEventListener('click', e => { const t = e.target.closest('.tab'); if (t) showTab(t.dataset.tab); });
 
 /* ============================================================
-   7. 首页：月亮计时器、数字、恢复之路、彩蛋
+   7. 首页：月亮计时器、数字、节点之路、彩蛋。有好几件事时，在月亮上左右滑动切换
    ============================================================ */
-const QUOTES = ['想抽的念头只是路过，它不住在这里。', '你不是在忍耐，你是在自由。', '每一次没点燃，都是一次小小的胜利。', '烟瘾像海浪，来得凶，退得也快。', '今天不抽，就是今天的全部任务。', '慢慢来，你已经走了很远。', '深呼吸。你做得比想象中好。'];
+const QUOTES = {
+  smoke: ['想抽的念头只是路过，它不住在这里。', '你不是在忍耐，你是在自由。', '每一次没点燃，都是一次小小的胜利。', '烟瘾像海浪，来得凶，退得也快。', '今天不抽，就是今天的全部任务。', '慢慢来，你已经走了很远。', '深呼吸。你做得比想象中好。'],
+  custom: ['那个念头只是路过，它不住在这里。', '你不是在忍耐，你是在把自己要回来。', '每一次没去做，都是一次小小的胜利。', '冲动像海浪，来得凶，退得也快。', '今天不碰它，就是今天的全部任务。', '慢慢来，你已经走了很远。', '深呼吸。你做得比想象中好。'],
+};
+
+/* 首页三个数字配的小画（66×58）。戒烟：折断的烟、铜钱、沙漏；别的事：一棵小芽，再按填过的数字配沙漏、铜钱、小旗、弯月 */
+const HOURGLASS = `<svg viewBox="0 0 66 58" aria-hidden="true">
+  <path d="M21 10v38M45 10v38" stroke="#8C6544" stroke-width="2.2"/>
+  <path d="M24 10c0 10 8 13.5 8 19s-8 9-8 19h18c0-10-8-13.5-8-19s8-9 8-19z" fill="rgba(255,255,255,.06)" stroke="rgba(255,255,255,.38)" stroke-width="1.2"/>
+  <path d="M26.5 19.5h13c-1.5 4-4.5 6-6.5 8.5-2-2.5-5-4.5-6.5-8.5z" style="fill:var(--mint)"/>
+  <path d="M25.6 48c1-6.2 4.2-9 7.4-9s6.4 2.8 7.4 9z" style="fill:var(--mint)"/>
+  <path class="sand" d="M33 29v10" style="stroke:var(--mint)" stroke-width="1.4" stroke-dasharray="2 2.5"/>
+  <rect x="17" y="6" width="32" height="5" rx="2.5" fill="#C99B6A"/><rect x="17" y="47" width="32" height="5" rx="2.5" fill="#C99B6A"/>
+</svg>`;
+const STAT_ART = {
+  /* 折断的烟，缝里长出一棵小芽 */
+  cigs: `<svg viewBox="0 0 66 58" aria-hidden="true">
+  <g transform="rotate(-14 22 42)"><rect x="4" y="38" width="11" height="8" rx="2.5" fill="#E9A15C"/><rect x="14" y="38" width="15" height="8" rx="1" fill="#EEF0EC"/></g>
+  <g transform="rotate(15 46 42)"><rect x="37" y="38" width="18" height="8" rx="1" fill="#EEF0EC"/><rect x="54" y="38" width="6" height="8" rx="2" fill="#7E878A"/></g>
+  <path d="M33 40c0-7-1-12 1-18" fill="none" style="stroke:var(--mint)" stroke-width="2" stroke-linecap="round"/>
+  <path d="M34 25c-4-6-10-6-12-3 4 4 9 4 12 3z" style="fill:var(--mint)"/>
+  <path d="M34 22c3-7 10-8 12-5-3 5-8 6-12 5z" style="fill:var(--mint-deep)"/>
+</svg>`,
+  /* 一小堆土里冒出的新芽 */
+  count: `<svg viewBox="0 0 66 58" aria-hidden="true">
+  <path d="M12 50c3-6.5 11-10 21-10s18 3.5 21 10z" fill="#6B4E37"/>
+  <path d="M18 50c3-4 8.5-6.3 15-6.3S45 46 48 50z" fill="#8A6648"/>
+  <path d="M33 44c0-8-1-13 1-21" fill="none" style="stroke:var(--mint)" stroke-width="2.2" stroke-linecap="round"/>
+  <path d="M34 29c-5-7-12-7-15-3.5 5 5 11 5.5 15 3.5z" style="fill:var(--mint)"/>
+  <path d="M34 25c4-8 12-9.5 15-5.5-4 6-10 7.5-15 5.5z" style="fill:var(--mint-deep)"/>
+  <path d="M50 6.5l1 2.6 2.6 1-2.6 1-1 2.6-1-2.6-2.6-1 2.6-1z" fill="#FFF3D6"/>
+</svg>`,
+  /* 一摞铜钱 */
+  money: `<svg viewBox="0 0 66 58" aria-hidden="true">
+  <path d="M10 44v4.5c0 3 7.2 5.5 16 5.5s16-2.5 16-5.5V44z" fill="#C4823A"/><ellipse cx="26" cy="44" rx="16" ry="5.2" fill="#F2C77E"/>
+  <path d="M10 36.5V41c0 3 7.2 5.5 16 5.5s16-2.5 16-5.5v-4.5z" fill="#C4823A"/><ellipse cx="26" cy="36.5" rx="16" ry="5.2" fill="#F2C77E"/>
+  <path d="M10 29v4.5c0 3 7.2 5.5 16 5.5s16-2.5 16-5.5V29z" fill="#C4823A"/><ellipse cx="26" cy="29" rx="16" ry="5.2" fill="#F8D9A0"/>
+  <rect x="22.6" y="27.6" width="6.8" height="2.8" rx=".7" fill="#C4823A"/>
+  <circle cx="48" cy="26" r="11.5" fill="#F8D9A0"/><circle cx="48" cy="26" r="8.3" fill="none" stroke="#D9A055" stroke-width="1.2"/>
+  <rect x="45" y="23" width="6" height="6" rx="1.2" fill="#0D1315"/>
+  <path d="M58 6.5l1 2.6 2.6 1-2.6 1-1 2.6-1-2.6-2.6-1 2.6-1z" fill="#FFF3D6"/>
+</svg>`,
+  /* 沙漏：流回来的时间（生命 / 腾出来的时间） */
+  life: HOURGLASS, time: HOURGLASS,
+  /* 插在小山头上的旗：扛住了 */
+  wins: `<svg viewBox="0 0 66 58" aria-hidden="true">
+  <path d="M8 52c6-9 15-13 25-13s19 4 25 13z" fill="rgba(255,255,255,.1)"/>
+  <path d="M30 40V9" stroke="#C99B6A" stroke-width="2.2" stroke-linecap="round"/>
+  <path d="M31 10c5.5 2.2 9.5-1.5 15 .8v11.5c-5.5-2.3-9.5 1.4-15-.8z" style="fill:var(--mint)"/>
+  <path d="M51 28l1 2.6 2.6 1-2.6 1-1 2.6-1-2.6-2.6-1 2.6-1z" fill="#FFF3D6"/>
+</svg>`,
+  /* 一弯月亮：最长纪录 */
+  best: `<svg viewBox="0 0 66 58" aria-hidden="true">
+  <path d="M40 9A20 20 0 1 0 54 37 16 16 0 0 1 40 9z" style="fill:var(--moon-b)"/>
+  <circle cx="15" cy="13" r="1.6" fill="#FFF3D6"/>
+  <path d="M54 9l.9 2.3 2.3.9-2.3.9-.9 2.3-.9-2.3-2.3-.9 2.3-.9z" fill="#FFF3D6"/>
+</svg>`,
+};
+
+/* 数字的显示方式：钱、时长（分钟起）、时段（毫秒） */
+const fmtMoney = m => (m >= 1e5 ? [nf(m / 1e4, 1), '万'] : m >= 1e3 ? [nf(Math.floor(m)), ''] : m >= 100 ? [nf(Math.floor(m * 10) / 10, 1), ''] : [nf(Math.floor(m * 100) / 100, 2), '']);
+const fmtMin = l => (l < 60 ? [nf(Math.floor(l)), '分钟'] : l < 48 * 60 ? [nf(Math.floor(l / 6) / 10, 1), '小时'] : [nf(Math.floor(l / 144) / 10, 1), '天']);
+const fmtSpan = ms => (ms >= DAY ? [nf(Math.floor(ms / DAY)), '天'] : ms >= HOUR ? [nf(Math.floor(ms / HOUR)), '小时'] : [nf(Math.floor(ms / MIN)), '分钟']);
 
 const Home = (() => {
   const view = $('#view-home'), body = $('#home-body'), hero = $('#hero'), egg = $('#pull-egg'), daysWrap = $('#t-days-wrap');
   const R = {
     d: new Roller($('#t-days')),
     h: new Roller($('#t-h'), { fast: true, wrap: true }), m: new Roller($('#t-m'), { fast: true, wrap: true }), s: new Roller($('#t-s'), { fast: true, wrap: true }),
-    cigs: new Roller($('#st-cigs')), money: new Roller($('#st-money')), life: new Roller($('#st-life')),
   };
-  let lastSec = -1, lastMin = -1, lastP = -1, timer = 0, tlOpen = false;
+  /* 三个数字的位置：画、单位、说明跟着内容换 */
+  const slots = $$('#stats .stat').map(el => ({ ico: $('.stat-ico', el), pre: $('.pre', el), unit: $('.unit', el), k: $('.k', el), roll: new Roller($('.val', el)), key: '' }));
+  let lastSec = -1, lastMin = -1, lastP = -1, timer = 0, tlOpen = false, tlFresh = false;
   const setText = (el, v) => { if (el.textContent !== v) el.textContent = v; };   // 内容没变就不碰 DOM
 
   /* 每秒一次：计时器、月亮轨道、数字 */
   function tick() {
-    if (!state.profile) return;
-    const ms = elapsed(), sec = Math.floor(ms / 1e3);
+    const h = curHabit(); if (!h) return;
+    const ms = elapsed(h), sec = Math.floor(ms / 1e3);
     if (sec === lastSec) return;
     lastSec = sec;
     const days = Math.floor(ms / DAY);
     R.d.set(days); daysWrap.dataset.len = String(days).length;
     R.h.set(pad(Math.floor(ms / HOUR) % 24)); R.m.set(pad(Math.floor(ms / MIN) % 60)); R.s.set(pad(sec % 60));
 
-    const i = MILES.findIndex(m => m.ms > ms);
+    const M = miles(h.kind), i = M.findIndex(m => m.ms > ms);
     let p = 1;
     if (i === -1) {
       setText($('#next-em'), '全部点亮');
       setText($('#next-title'), '所有的灯，都亮了');
       setText($('#next-eta'), '往后的每一天，都是奖励');
     } else {
-      const prev = i ? MILES[i - 1].ms : 0, m = MILES[i];
+      const prev = i ? M[i - 1].ms : 0, m = M[i];
       p = (ms - prev) / (m.ms - prev);
       setText($('#next-em'), '下一站');
       setText($('#next-title'), m.title);
@@ -1749,48 +2057,64 @@ const Home = (() => {
     }
     if (lastP < 0 || Math.abs(p - lastP) >= 4e-4) { lastP = p; hero.style.setProperty('--p', p.toFixed(4)); }   // 变化看得见时才重绘，省电
 
-    stats();
+    stats(h);
     const min = Math.floor(ms / MIN);
-    if (min !== lastMin) { lastMin = min; timeline(); greet(); }
+    if (min !== lastMin) { lastMin = min; timeline(tlFresh); tlFresh = false; greet(); }
     Awards.check();
   }
 
-  function stats() {
-    const t = totals();
-    R.cigs.set(nf(Math.floor(t.cigs)));
-    const m = t.money;
-    setText($('#st-cur'), curSymbol());
-    setText($('#st-money-u'), m >= 1e5 ? '万' : '');
-    R.money.set(m >= 1e5 ? nf(m / 1e4, 1) : m >= 1e3 ? nf(Math.floor(m)) : m >= 100 ? nf(Math.floor(m * 10) / 10, 1) : nf(Math.floor(m * 100) / 100, 2));
-    const l = t.lifeMin;
-    setText($('#st-life-u'), l < 60 ? '分钟' : l < 48 * 60 ? '小时' : '天');
-    R.life.set(l < 60 ? nf(Math.floor(l)) : l < 48 * 60 ? nf(Math.floor(l / 6) / 10, 1) : nf(Math.floor(l / 144) / 10, 1));
+  /* 戒烟：少抽了 / 省下了 / 找回生命。
+     别的事：少了几次；填了每次的时间就有「腾出了」，填了钱就有「省下了」；不够三个，补「扛住了」「最长纪录」 */
+  function statDefs(h) {
+    const t = totals(h);
+    const money = () => { const [v, u] = fmtMoney(t.money); return { key: 'money', label: '省下了', pre: curSymbol(), text: v, unit: u }; };
+    if (h.kind === 'smoke') {
+      const [lv, lu] = fmtMin(t.lifeMin);
+      return [{ key: 'cigs', label: '少抽了', text: nf(Math.floor(t.count)), unit: '支' }, money(), { key: 'life', label: '找回生命', text: lv, unit: lu }];
+    }
+    const out = [{ key: 'count', label: '少了', text: nf(Math.floor(t.count)), unit: '次' }];
+    if (h.minutes > 0) { const [v, u] = fmtMin(t.timeMin); out.push({ key: 'time', label: '腾出了', text: v, unit: u }); }
+    if (h.cost > 0) out.push(money());
+    if (out.length < 3) out.push({ key: 'wins', label: '扛住了', text: nf(wins(h).length), unit: '次' });
+    if (out.length < 3) { const [v, u] = fmtSpan(streaks(h).best); out.push({ key: 'best', label: '最长纪录', text: v, unit: u }); }
+    return out;
+  }
+  function stats(h = curHabit()) {
+    statDefs(h).forEach((d, i) => {
+      const s = slots[i];
+      if (s.key !== d.key) {   // 这个位置换了内容：换画、换说明，数字从 0 滚上来
+        s.key = d.key; s.k.textContent = d.label; s.roll.text = null;
+        s.ico.innerHTML = STAT_ART[d.key].replace('<svg ', `<svg class="float${['', ' d2', ' d3'][i]}" `);
+      }
+      setText(s.pre, d.pre || ''); setText(s.unit, d.unit || ''); s.roll.set(d.text);
+    });
   }
 
   function greet() {
-    const d = new Date(), h = d.getHours();
-    setText($('#greet'), h < 5 ? '夜深了' : h < 11 ? '早上好' : h < 13 ? '中午好' : h < 18 ? '下午好' : '晚上好');
+    const h = curHabit(), d = new Date(), hr = d.getHours();
+    setText($('#greet'), hr < 5 ? '夜深了' : hr < 11 ? '早上好' : hr < 13 ? '中午好' : hr < 18 ? '下午好' : '晚上好');
     setText($('#greet-sub'), `${d.getMonth() + 1}月${d.getDate()}日 · 星期${WEEK[d.getDay()]}`);
-    setText($('#day-pill'), `第 ${Math.floor(elapsed() / DAY) + 1} 天`);
-    const r = $('#reason'); setText(r, state.profile.reason); r.hidden = !state.profile.reason;
+    setText($('#hp-name'), habitTitle(h));
+    setText($('#hp-day'), `第 ${Math.floor(elapsed(h) / DAY) + 1} 天`);
+    const r = $('#reason'); setText(r, h.reason); r.hidden = !h.reason;
   }
 
-  /* 恢复之路：走过的灯笼亮着，正在走的那一盏在呼吸。默认只显示眼前这一段，可以展开全程 */
+  /* 节点之路（戒烟是身体的恢复，别的事是习惯的改变）：走过的灯笼亮着，正在走的那一盏在呼吸。默认只显示眼前这一段，可以展开全程 */
   function timeline(fresh) {
-    const ms = elapsed(), nowIdx = HEALTH.findIndex(h => h.ms > ms);
-    const done = nowIdx === -1 ? HEALTH.length : nowIdx;
-    setText($('#tl-count'), `${done} / ${HEALTH.length} 盏已点亮`);
-    const focus = nowIdx === -1 ? HEALTH.length - 1 : nowIdx;
-    const from = tlOpen ? 0 : Math.max(0, focus - 2), to = tlOpen ? HEALTH.length - 1 : Math.min(HEALTH.length - 1, focus + 2);
+    const h = curHabit(), T = kindOf(h).timeline, ms = elapsed(h), nowIdx = T.findIndex(x => x.ms > ms);
+    const done = nowIdx === -1 ? T.length : nowIdx;
+    setText($('#tl-count'), `${done} / ${T.length} 盏已点亮`);
+    const focus = nowIdx === -1 ? T.length - 1 : nowIdx;
+    const from = tlOpen ? 0 : Math.max(0, focus - 2), to = tlOpen ? T.length - 1 : Math.min(T.length - 1, focus + 2);
     let html = '';
     for (let i = from; i <= to; i++) {
-      const h = HEALTH[i], isDone = i < done, isNow = i === nowIdx, prev = i ? HEALTH[i - 1].ms : 0;
-      const extra = isNow ? `<div class="tl-bar" style="--p:${((ms - prev) / (h.ms - prev)).toFixed(4)}"><i></i></div><p class="tl-eta">还有 ${human(h.ms - ms)}</p>` : '';
+      const x = T[i], isDone = i < done, isNow = i === nowIdx, prev = i ? T[i - 1].ms : 0;
+      const extra = isNow ? `<div class="tl-bar" style="--p:${((ms - prev) / (x.ms - prev)).toFixed(4)}"><i></i></div><p class="tl-eta">还有 ${human(x.ms - ms)}</p>` : '';
       html += `<div class="tl-item${isDone ? ' is-done' : ''}${isNow ? ' is-now' : ''}${i === to ? ' is-last' : ''}" style="--j:${i - from}">
-        ${lamp(isDone)}<div><p class="tl-when num">${h.when}</p><p class="tl-title">${h.title}</p><p class="tl-desc">${h.desc}</p>${extra}</div></div>`;
+        ${lamp(isDone)}<div><p class="tl-when num">${x.when}</p><p class="tl-title">${x.title}</p><p class="tl-desc">${x.desc}</p>${extra}</div></div>`;
     }
-    if (tlOpen || to - from + 1 < HEALTH.length) {
-      html += `<button type="button" class="tl-more${tlOpen ? ' is-open' : ''}" data-tl-toggle>${tlOpen ? '收起' : `看完整的路 · ${HEALTH.length} 盏灯`}${icon('chev')}</button>`;
+    if (tlOpen || to - from + 1 < T.length) {
+      html += `<button type="button" class="tl-more${tlOpen ? ' is-open' : ''}" data-tl-toggle>${tlOpen ? '收起' : `看完整的路 · ${T.length} 盏灯`}${icon('chev')}</button>`;
     }
     const el = $('#timeline');
     el.classList.toggle('is-fresh', !!fresh);
@@ -1798,19 +2122,56 @@ const Home = (() => {
   }
   $('#timeline').addEventListener('click', e => { if (e.target.closest('[data-tl-toggle]')) { tlOpen = !tlOpen; timeline(true); haptic(6); } });
 
+  /* 换了一件事（或刚进主界面）：换上这一类的文案和节点。dir = 1 / -1 是切换方向，月亮上的读数跟着滑进来 */
+  function applyHabit(dir = 0) {
+    const h = curHabit(); if (!h) return;
+    const k = kindOf(h), many = state.habits.length > 1, dotsEl = $('#habit-dots');
+    setText($('#t-label'), k.label);
+    hero.setAttribute('aria-label', `${habitTitle(h)} · ${k.label}的时长`);
+    setText($('#crave-title'), k.crave);
+    setText($('#tl-title'), k.road);
+    $('#tl-fine').innerHTML = h.kind === 'smoke'
+      ? '恢复节点参考公开的健康研究，每个人的节奏不同。<br>生命时间按每支烟约 11 分钟估算。'
+      : `这些节点只是参考，每个人的节奏不同。<br>「66 天」出自一项习惯养成研究，是中位数，个体差异很大。${h.minutes ? `<br>腾出的时间按每次约 ${h.minutes} 分钟估算。` : ''}`;
+    dotsEl.hidden = !many;
+    dotsEl.innerHTML = many ? state.habits.map(x => `<i${x.id === h.id ? ' class="is-on"' : ''}></i>`).join('') : '';
+    tlOpen = false; tlFresh = !!dir;
+    slots.forEach(s => { s.key = ''; });
+    if (dir && !REDUCED) { hero.classList.remove('swap-next', 'swap-prev'); void hero.offsetWidth; hero.classList.add(dir > 0 ? 'swap-next' : 'swap-prev'); }
+    hero.style.setProperty('--sec', ((elapsed(h) / 1e3) % 60).toFixed(2));   // 让绕月的小星和秒数对齐
+    lastSec = lastMin = lastP = -1;
+  }
+  /* 切到下一件 / 上一件 */
+  function shiftHabit(dir) {
+    const list = state.habits; if (list.length < 2) return;
+    const i = list.findIndex(x => x.id === curHabit().id), j = (i + dir + list.length) % list.length;
+    haptic(8); App.setHabit(list[j].id, dir);
+  }
+
   function loop() {
     clearTimeout(timer);
-    if (!state.profile) return;   // 数据被清空后停表，等重新引导完再启动
+    if (!curHabit()) return;   // 数据被清空后停表，等重新引导完再启动
     tick();
     timer = setTimeout(loop, 1000 - (elapsed() % 1000) + 12);   // 对齐到整秒，避免跳秒
   }
   function enter() {
     lastSec = lastMin = lastP = -1;
-    if (state.profile) hero.style.setProperty('--sec', ((elapsed() / 1e3) % 60).toFixed(2));   // 让绕月的小星和秒数对齐
-    loop(); R.cigs.replay(); R.money.replay(); R.life.replay();
+    if (curHabit()) hero.style.setProperty('--sec', ((elapsed() / 1e3) % 60).toFixed(2));
+    loop(); slots.forEach(s => s.roll.replay());
   }
   function refresh() { lastSec = lastMin = lastP = -1; tick(); }
-  document.addEventListener('visibilitychange', () => { if (!document.hidden && state.profile) loop(); });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && curHabit()) loop(); });
+  $('#habit-pill').addEventListener('click', () => { haptic(6); Habits.sheet(); });
+
+  /* —— 左右滑动月亮：切换到另一件事（触摸时浏览器只接管上下滚动，见样式里的 touch-action） —— */
+  let swipeXY = null;
+  hero.addEventListener('pointerdown', e => { swipeXY = [e.clientX, e.clientY]; });
+  hero.addEventListener('pointercancel', () => { swipeXY = null; });
+  hero.addEventListener('pointerup', e => {
+    if (!swipeXY) return;
+    const dx = e.clientX - swipeXY[0], dy = e.clientY - swipeXY[1]; swipeXY = null;
+    if (Math.abs(dx) > 46 && Math.abs(dx) > Math.abs(dy) * 1.3) shiftHabit(dx < 0 ? 1 : -1);
+  });
 
   /* —— 彩蛋一：长按月亮，读一读当初写给自己的话 —— */
   let holdTimer = 0, holdXY = null;
@@ -1819,14 +2180,18 @@ const Home = (() => {
     holdXY = [e.clientX, e.clientY]; hero.classList.add('is-held');
     holdTimer = setTimeout(() => {
       cancelHold(); haptic([12, 50, 20]);
-      const p = state.profile, d = new Date(p.quitAt);
-      const breaths = Math.floor((now() - p.quitAt) / MIN * 15);
+      const h = curHabit(), d = new Date(h.quitAt), big = v => `<b class="num grad-text" style="font-size:30px">${v}</b>`;
+      const line = h.kind === 'smoke'
+        ? `从那一刻起，你多呼吸了大约<br>${big(nf(Math.floor((now() - h.quitAt) / MIN * 15)))} 口干净的空气`
+        : h.minutes > 0
+          ? `从那一刻起，你大约把<br>${big(fmtMin(totals(h).timeMin).join(' '))} 还给了自己`
+          : `从那一刻起，你已经走过了<br>${big(nf(Math.floor((now() - h.quitAt) / DAY)))} 个日夜`;
       openVeil(`
         ${pig('egg-pig is-wave')}
         <p class="eyebrow" style="--i:1">写给自己</p>
-        <p class="egg-quote" style="--i:2">${esc(p.reason || '你比想象中更有力量。')}</p>
-        <p class="sub" style="--i:3">从那一刻起，你多呼吸了大约<br><b class="num grad-text" style="font-size:30px">${nf(breaths)}</b> 口干净的空气</p>
-        <p class="sub muted num" style="--i:4;font-size:13px">始于 ${d.getFullYear()} 年 ${d.getMonth() + 1} 月 ${d.getDate()} 日 ${pad(d.getHours())}:${pad(d.getMinutes())}</p>`);
+        <p class="egg-quote" style="--i:2">${esc(h.reason || '你比想象中更有力量。')}</p>
+        <p class="sub" style="--i:3">${line}</p>
+        <p class="sub muted num" style="--i:4;font-size:13px">${state.habits.length > 1 ? `${esc(habitTitle(h))} · ` : ''}始于 ${d.getFullYear()} 年 ${d.getMonth() + 1} 月 ${d.getDate()} 日 ${pad(d.getHours())}:${pad(d.getMinutes())}</p>`);
     }, 650);
   });
   hero.addEventListener('pointermove', e => {
@@ -1854,7 +2219,7 @@ const Home = (() => {
     const dy = e.touches[0].clientY - pullY;
     if (dy <= 0 || view.scrollTop > 0) { if (pulled) release(); pullY = dy <= 0 ? pullY : null; return; }
     if (e.cancelable) e.preventDefault();
-    if (!pulled) egg.textContent = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+    if (!pulled) { const Q = QUOTES[curHabit() ? curHabit().kind : 'smoke']; egg.textContent = Q[Math.floor(Math.random() * Q.length)]; }
     pulled = Math.pow(dy, .82);   // 越拉越紧的橡皮筋
     body.style.transition = 'none'; body.style.transform = `translate3d(0,${pulled.toFixed(1)}px,0)`;
     egg.style.opacity = clamp((pulled - 30) / 50, 0, 1); egg.style.transform = `translate3d(0,${(pulled * .35).toFixed(1)}px,0)`;
@@ -1868,7 +2233,7 @@ const Home = (() => {
   }
   ['touchend', 'touchcancel'].forEach(t => view.addEventListener(t, () => { if (pulled) release(); pullY = null; }, { passive: true }));
 
-  return { enter, refresh, tick };
+  return { enter, refresh, tick, applyHabit };
 })();
 
 
@@ -1883,10 +2248,11 @@ const Crave = (() => {
   const tipEl = $('#cv-tip'), bar = $('#cv-bar'), roundEl = $('#cv-round'), range = $('#cv-intensity');
   const PHASES = [['in', '吸气', 4], ['hold', '屏息', 7], ['out', '呼气', 8]];
   const CYCLE = 19, ROUNDS = 9, LEAD = 3;   // 9 轮 × 19 秒 ≈ 3 分钟；开始前 3 秒准备
-  const TIPS = ['用鼻子慢慢吸气，让肚子一点点鼓起来。', '烟瘾通常只持续几分钟，它正在路过。', '屏住的这几秒，身体在安静下来。', '像吹蒲公英一样，把气慢慢吐完。', '不用和它打架，看着它走就好。', '肩膀放下来，下巴也放松。', '想抽的是习惯，不是你。', '再来一轮，浪头就要退了。', '最后一轮。你做得很好。'];
+  const TIPS_FOR = (urge, want) => ['用鼻子慢慢吸气，让肚子一点点鼓起来。', `${urge}通常只持续几分钟，它正在路过。`, '屏住的这几秒，身体在安静下来。', '像吹蒲公英一样，把气慢慢吐完。', '不用和它打架，看着它走就好。', '肩膀放下来，下巴也放松。', `${want}的是习惯，不是你。`, '再来一轮，浪头就要退了。', '最后一轮。你做得很好。'];
+  const TIPS = { smoke: TIPS_FOR('烟瘾', '想抽'), custom: TIPS_FOR('冲动', '想要') };
   const LEVELS = ['轻微', '还好', '明显', '强烈', '难熬'];
   let active = false, stageName = 'breathe', startAt = 0, raf = 0, lastKey = '', lastCount = '';
-  let outcome = null, picked = new Set(), intensity = null, reset = false, wakeLock = null;
+  let outcome = null, picked = new Set(), intensity = null, reset = false, wakeLock = null, habit = null;
 
   function stage(name) {
     stageName = name;
@@ -1897,7 +2263,10 @@ const Crave = (() => {
   }
 
   function open() {
-    if (active) return;
+    if (active || !curHabit()) return;
+    habit = curHabit();   // 这一次呼吸、这一条记录，属于此刻正在看的那件事
+    const k = kindOf(habit);
+    $('#cv-int-k').textContent = k.urge; range.setAttribute('aria-label', `${k.urge}强度，1 到 5`);
     active = true; outcome = null; picked = new Set(); intensity = null; reset = false; lastKey = lastCount = '';
     root.hidden = false; root.classList.remove('is-slip');
     stage('breathe');
@@ -1930,7 +2299,7 @@ const Crave = (() => {
       wrap.style.setProperty('--s', ph[0] === 'out' ? .62 : 1);
       phaseEl.textContent = ph[1];
       roundEl.textContent = `${round + 1} / ${ROUNDS}`;
-      if (ph[0] === 'in' && el > 1) swapTip(TIPS[round % TIPS.length]);
+      if (ph[0] === 'in' && el > 1) { const T = TIPS[habit.kind] || TIPS.smoke; swapTip(T[round % T.length]); }
       haptic(ph[0] === 'in' ? 14 : ph[0] === 'hold' ? 8 : [8, 50, 8]);   // 闭着眼也能跟上节奏
       /* 总进度条：用这一阶段的时长做线性过渡，看起来是连续前进的 */
       bar.firstElementChild.style.transitionDuration = left.toFixed(2) + 's';
@@ -1950,14 +2319,14 @@ const Crave = (() => {
 
   /* 选了结果就立刻落盘；后面的强度、场景只是补充 */
   function choose(type) {
-    outcome = { id: uid(), t: now(), type, intensity: null, tags: [], reset: false };
+    outcome = { id: uid(), habit: habit.id, t: now(), type, intensity: null, tags: [], reset: false };
     state.events.push(outcome); save();
     root.classList.toggle('is-slip', type === 'slip');
     $('#cv-emblem').innerHTML = type === 'win' ? pig('is-happy') + SLASH : pig('is-calm');
     if (type === 'win') {
-      const n = wins().length;
+      const n = wins(habit).length;
       $('#cv-res-title').textContent = n === 1 ? '第一次，你赢了' : '你又赢了一次';
-      $('#cv-res-sub').textContent = `这是你第 ${n} 次扛住烟瘾。那阵冲动已经被你一刀斩断，而你还好好地站在这里。`;
+      $('#cv-res-sub').textContent = `这是你第 ${n} 次扛住${kindOf(habit).urge}。那阵冲动已经被你一刀斩断，而你还好好地站在这里。`;
       $('#cv-done').textContent = '记下这次胜利';
       haptic([18, 70, 18, 70, 46]);
       setTimeout(() => {
@@ -1979,7 +2348,7 @@ const Crave = (() => {
   }
 
   function renderTags() {
-    $('#cv-tags').innerHTML = [...DEFAULT_TAGS, ...state.customTags]
+    $('#cv-tags').innerHTML = [...new Set([...kindOf(habit).tags, ...state.customTags])]
       .map(t => `<button type="button" class="chip${picked.has(t) ? ' is-on' : ''}" data-tag="${esc(t)}">${esc(t)}</button>`).join('');
   }
   function setIntensity() {
@@ -1990,7 +2359,7 @@ const Crave = (() => {
   function addTag() {
     const input = $('#cv-tag-input'), t = input.value.trim().slice(0, 8);
     if (!t) return;
-    if (!DEFAULT_TAGS.includes(t) && !state.customTags.includes(t)) {
+    if (!kindOf(habit).tags.includes(t) && !state.customTags.includes(t)) {
       if (state.customTags.length >= 12) { toast('自定义标签最多 12 个'); return; }
       state.customTags.push(t); save();
     }
@@ -2039,17 +2408,31 @@ const Crave = (() => {
 })();
 
 
+/* 页面顶部「看哪一件事」的一排小签：只有一件事时不出现；withAdd 时最后多一个「再戒一件」（设置页用） */
+function habitChips(sel, withAdd = false) {
+  const el = $(sel), show = state.habits.length > 1 || withAdd;
+  el.hidden = !show;
+  el.innerHTML = !show ? '' : state.habits.map(h => `<button type="button" class="chip${h.id === state.current ? ' is-on' : ''}" data-habit="${esc(h.id)}" aria-pressed="${h.id === state.current}">${esc(habitTitle(h))}</button>`).join('')
+    + (withAdd && state.habits.length < MAX_HABITS ? '<button type="button" class="chip chip-add" data-habit-add>＋ 再戒一件</button>' : '');
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('.habit-chips [data-habit], .habit-chips [data-habit-add]'); if (!b) return;
+  if (b.hasAttribute('data-habit-add')) { haptic(6); Onboard.show({ add: true }); return; }
+  if (b.dataset.habit !== state.current) { haptic(6); App.setHabit(b.dataset.habit); }
+});
+
 /* ============================================================
-   9. 洞察：连续纪录、烟瘾星图、时段山脊、触发排行、最近记录
+   9. 洞察：连续纪录、星图、时段山脊、触发排行、最近记录（都是正在看的那件事的）
    ============================================================ */
 const Insights = (() => {
   let month = null;      // 正在查看的月份（当月 1 号）
   let selected = null;   // 选中的日期，形如 2026-01-31
+  let shownFor = '';     // 换了一件事，就回到当月
 
   const fmtDay = k => { const [, m, d] = k.split('-'); return `${+m}月${+d}日`; };
-  function byDay() {
+  function byDay(list) {
     const map = {};
-    for (const e of state.events) { const k = dayKey(e.t); map[k] = map[k] || { n: 0, win: 0, slip: 0 }; map[k].n++; map[k][e.type]++; }
+    for (const e of list) { const k = dayKey(e.t); map[k] = map[k] || { n: 0, win: 0, slip: 0 }; map[k].n++; map[k][e.type]++; }
     return map;
   }
   /* 不足一天时换成小时 / 分钟，免得一直显示 0 */
@@ -2059,44 +2442,49 @@ const Insights = (() => {
   }
 
   function render() {
-    const s = streaks(), w = wins().length, l = slips().length;
+    const h = curHabit(), K = kindOf(h);
+    if (shownFor !== h.id) { shownFor = h.id; month = null; selected = null; }
+    habitChips('#ins-habits');
+    const s = streaks(h), w = wins(h).length, l = slips(h).length;
+    $('#k-streak-k').textContent = K.clean;
     setKpi('#k-streak', '#k-streak-u', s.current); setKpi('#k-best', '#k-best-u', s.best);
-    $('#k-wins').textContent = w; $('#k-slips').textContent = l;
-    $('#k-rate').textContent = w + l ? Math.round(w / (w + l) * 100) + '%' : '—';
+    $('#trio').innerHTML = `<span><b>${w}</b>次扛住</span><span><b>${l}</b>次${K.slip}</span><span><b>${w + l ? Math.round(w / (w + l) * 100) + '%' : '—'}</b>胜率</span>`;
+    $('#cal-name').textContent = K.map; $('#cal-legend-slip').textContent = K.slip;
     if (!month) { const d = new Date(); month = new Date(d.getFullYear(), d.getMonth(), 1); }
     calendar(); hours(); triggers(); log();
   }
 
-  /* 星图：每一天是一颗星，烟瘾越多越亮；复吸的那天套一圈暖色 */
+  /* 星图：每一天是一颗星，冲动越多越亮；没忍住的那天套一圈暖色 */
   function calendar() {
-    const y = month.getFullYear(), m = month.getMonth(), map = byDay();
+    const h = curHabit(), K = kindOf(h), list = evs(h);
+    const y = month.getFullYear(), m = month.getMonth(), map = byDay(list);
     const first = (new Date(y, m, 1).getDay() + 6) % 7;   // 周一作为一周的开始
     const days = new Date(y, m + 1, 0).getDate();
-    const today = dayKey(now()), start = dayKey(state.profile.quitAt);
+    const today = dayKey(now()), start = dayKey(h.quitAt);
     let html = '<span></span>'.repeat(first);
     for (let d = 1; d <= days; d++) {
       const k = `${y}-${pad(m + 1)}-${pad(d)}`, e = map[k];
       const off = k > today || (k < start && !e);
       const lvl = e ? (e.n >= 6 ? 4 : e.n >= 4 ? 3 : e.n >= 2 ? 2 : 1) : 0;
       const cls = ['cal-day', off && 'is-off', lvl && 'l' + lvl, e && e.slip && 'has-slip', k === today && 'is-today', k === selected && 'is-sel'].filter(Boolean).join(' ');
-      html += `<button type="button" class="${cls}" data-day="${k}"${off ? ' disabled' : ''} aria-label="${fmtDay(k)}${e ? `，${e.n} 次烟瘾` : ''}"><span>${d}</span></button>`;
+      html += `<button type="button" class="${cls}" data-day="${k}"${off ? ' disabled' : ''} aria-label="${fmtDay(k)}${e ? `，${e.n} 次${K.urge}` : ''}"><span>${d}</span></button>`;
     }
     $('#cal-title').textContent = `${y} 年 ${m + 1} 月`;
     $('#cal').innerHTML = html;
-    const cur = new Date(), q = new Date(Math.min(state.profile.quitAt, state.events.length ? state.events[0].t : Infinity));
+    const cur = new Date(), q = new Date(Math.min(h.quitAt, list.length ? list[0].t : Infinity));
     $('#cal-next').disabled = y > cur.getFullYear() || (y === cur.getFullYear() && m >= cur.getMonth());
     $('#cal-prev').disabled = y < q.getFullYear() || (y === q.getFullYear() && m <= q.getMonth());
     const e = selected && map[selected], el = $('#cal-detail');
-    if (!selected) el.textContent = '越亮的星，那天的烟瘾越多';
+    if (!selected) el.textContent = `越亮的星，那天的${K.urge}越多`;
     else if (!e) el.textContent = `${fmtDay(selected)} · 风平浪静的一天`;
-    else el.textContent = `${fmtDay(selected)} · ${e.n} 次烟瘾，扛住 ${e.win} 次` + (e.slip ? `，复吸 ${e.slip} 次` : '');
+    else el.textContent = `${fmtDay(selected)} · ${e.n} 次${K.urge}，扛住 ${e.win} 次` + (e.slip ? `，${K.slip} ${e.slip} 次` : '');
   }
   function shift(n) { month = new Date(month.getFullYear(), month.getMonth() + n, 1); selected = null; calendar(); haptic(5); }
 
-  /* 一天 24 小时里烟瘾的分布，画成一道山脊；最高的山头上挂一粒光 */
+  /* 一天 24 小时里冲动的分布，画成一道山脊；最高的山头上挂一粒光 */
   function hours() {
     const bins = Array(24).fill(0);
-    state.events.forEach(e => bins[new Date(e.t).getHours()]++);
+    evs().forEach(e => bins[new Date(e.t).getHours()]++);
     const max = Math.max(...bins);
     if (!max) {
       $('#hours').innerHTML = ''; $('#hours-x').innerHTML = '';
@@ -2126,29 +2514,29 @@ const Insights = (() => {
 
   function triggers() {
     const count = {};
-    state.events.forEach(e => e.tags.forEach(t => { count[t] = (count[t] || 0) + 1; }));
+    evs().forEach(e => e.tags.forEach(t => { count[t] = (count[t] || 0) + 1; }));
     const rows = Object.entries(count).sort((a, b) => b[1] - a[1]).slice(0, 6);
     $('#triggers').innerHTML = rows.length
       ? rows.map(([t, n], i) => `<div class="rank-row"><span>${esc(t)}</span><div><i style="--w:${(n / rows[0][1]).toFixed(3)};--i:${i}"></i></div><b>${n}</b></div>`).join('')
       : '<p class="empty" style="padding:4px 0;text-align:left">记录时顺手选一下场景，慢慢就能看出，它总是因为什么来。</p>';
   }
 
-  const label = e => (e.type === 'win' ? '扛住了' : e.reset ? '复吸 · 重新计时' : '复吸');
+  const label = e => { const s = kindOf().slip; return e.type === 'win' ? '扛住了' : e.reset ? `${s} · 重新计时` : s; };
   const stamp = t => { const d = new Date(t); return `${d.getMonth() + 1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())}`; };
   function log() {
-    const list = state.events.slice(-8).reverse();
+    const K = kindOf(), list = evs().slice(-8).reverse();
     $('#log').innerHTML = list.length ? list.map(e => {
       const meta = [e.intensity ? `强度 ${e.intensity}` : '', ...e.tags].filter(Boolean).map(esc).join(' · ') || '没有补充信息';
       return `<button type="button" class="log-row${e.type === 'slip' ? ' is-slip' : ''}" data-id="${esc(e.id)}">
         <span class="log-ico">${icon(e.type === 'win' ? 'check' : 'wave')}</span>
         <span><b>${label(e)}</b><small>${meta}</small></span><time>${stamp(e.t)}</time></button>`;
-    }).join('') : `<p class="empty" style="padding:4px 0;text-align:left">还没有记录。下次想抽烟的时候，回首页点「我想抽烟」，${call()}陪你。</p>`;
+    }).join('') : `<p class="empty" style="padding:4px 0;text-align:left">还没有记录。下次${K.when}的时候，回首页点「${K.crave}」，${call()}陪你。</p>`;
   }
   function askDelete(id) {
     const e = state.events.find(x => x.id === id); if (!e) return;
     const { el, close } = openSheet(`
       <h2 class="h2">删除这条记录？</h2>
-      <p class="sub">${stamp(e.t)} · ${label(e)}${e.reset ? '<br>删除后，计时会回到这次复吸之前的起点。' : ''}</p>
+      <p class="sub">${stamp(e.t)} · ${label(e)}${e.reset ? `<br>删除后，计时会回到这次${kindOf().slip}之前的起点。` : ''}</p>
       <div class="row"><button type="button" class="btn btn-ghost" data-close>留着</button><button type="button" class="btn btn-danger" id="del-yes">删除</button></div>`);
     $('#del-yes', el).addEventListener('click', () => {
       state.events = state.events.filter(x => x.id !== id); Awards.sync(); save(); close(); App.refresh(); toast('已删除'); haptic(10);
@@ -2167,7 +2555,7 @@ const Insights = (() => {
 })();
 
 /* ============================================================
-   10. 成就：灯会、点灯仪式、心愿存钱罐、趣味换算
+   10. 成就：每件事一场灯会、点灯仪式；心愿存钱罐、趣味换算（几件事省下的钱加在一起）
    ============================================================ */
 /* 趣味换算的参考价（人民币）；其他货币按大致汇率折算，只图一乐 */
 const BUYS = [['tea', '一杯奶茶', 15], ['ticket', '一张电影票', 45], ['pot', '一顿火锅', 150], ['shoe', '一双跑鞋', 600], ['phones', '一副降噪耳机', 1500], ['plane', '一次短途旅行', 3000], ['phone', '一部新手机', 6000]];
@@ -2175,53 +2563,64 @@ const RATES = { CNY: 1, HKD: 1.1, TWD: 4.5, USD: .14, AUD: .21, EUR: .13, GBP: .
 const nice = v => { const p = Math.pow(10, Math.floor(Math.log10(v)) - 1); return Math.round(v / p) * p; };
 
 const Awards = (() => {
+  /* 每件事各有一套灯 */
+  const unl = h => (state.unlocked[h.id] = state.unlocked[h.id] || {});
   /* 这盏灯该不该亮：时长类看计时最长的一段，胜利类看扛住的次数 */
-  const reached = b => (b.ms ? timerBest() >= b.ms : wins().length >= b.wins);
+  const reached = (b, h) => (b.ms ? timerBest(h) >= b.ms : wins(h).length >= b.wins);
   /* 没亮的灯显示「眼下这段计时」走到了几成 */
-  const progress = b => clamp(b.ms ? elapsed() / b.ms : wins().length / b.wins, 0, 1);
+  const progress = (b, h) => clamp(b.ms ? elapsed(h) / b.ms : wins(h).length / b.wins, 0, 1);
 
-  /* 每秒检查一次有没有新点亮的灯；同时点亮多盏时，只为最高的那一盏办仪式 */
+  /* 每秒检查一次所有的事有没有新点亮的灯；同时点亮多盏时，只为最高的那一盏办仪式。
+     一次只办一场：别的事的灯，等这场仪式的幕布收起之后再点 */
   function check() {
     /* 有别的全屏层在场（引导、呼吸、弹层）就先等等，别抢戏 */
-    if (!state.profile || Crave.active || !$('#crave').hidden || $('.veil') || $('.sheet') || !$('#onboard').hidden) return;
-    const fresh = BADGES.filter(b => !state.unlocked[b.id] && reached(b));
-    if (!fresh.length) return;
-    fresh.forEach(b => { state.unlocked[b.id] = now(); });
-    save();
-    ceremony(fresh[fresh.length - 1], fresh.length - 1, true);
-    if (currentTab === 'awards') render();
+    if (!curHabit() || Crave.active || !$('#crave').hidden || $('.veil') || $('.sheet') || !$('#onboard').hidden) return;
+    for (const h of state.habits) {
+      const u = unl(h), fresh = BADGES.filter(b => !u[b.id] && reached(b, h));
+      if (!fresh.length) continue;
+      fresh.forEach(b => { u[b.id] = now(); });
+      save();
+      ceremony(fresh[fresh.length - 1], fresh.length - 1, true, h);
+      if (currentTab === 'awards') render();
+      return;
+    }
   }
 
   /* 数据被改过之后（改开始时间、删记录、导入备份），把已经不成立的灯熄掉；该亮的交给 check() 去点 */
   function sync() {
-    if (!state.profile) return;
-    for (const b of BADGES) if (state.unlocked[b.id] && !reached(b)) delete state.unlocked[b.id];
+    for (const h of state.habits) { const u = unl(h); for (const b of BADGES) if (u[b.id] && !reached(b, h)) delete u[b.id]; }
   }
 
-  function ceremony(b, more, celebrate) {
+  function ceremony(b, more, celebrate, h = curHabit()) {
+    const who = state.habits.length > 1 ? `${esc(habitTitle(h))} · ` : '';
     openVeil(`
       <div class="ul-scene" style="--i:0"><div class="ul-lamp">${lampTall(true)}<b>${b.n}<small>${b.u}</small></b></div>${pig('is-happy')}</div>
-      <p class="eyebrow" style="--i:2;color:var(--gold)">${celebrate ? '点亮了一盏灯' : '这盏灯亮着'}</p>
+      <p class="eyebrow" style="--i:2;color:var(--gold)">${who}${celebrate ? '点亮了一盏灯' : '这盏灯亮着'}</p>
       <h1 class="h1" style="--i:3">${b.title}</h1>
-      <p class="sub" style="--i:4;max-width:290px">${b.desc}</p>
+      <p class="sub" style="--i:4;max-width:290px">${badgeDesc(b, h.kind)}</p>
       ${more ? `<p class="sub muted" style="--i:5;font-size:13px">同时还点亮了另外 ${more} 盏</p>` : ''}`);
     if (celebrate) { haptic([20, 80, 20, 80, 60]); setTimeout(() => FX.burst(.5, .34, 110, true), 380); }
   }
 
   function render() {
-    $('#aw-count').textContent = `${BADGES.filter(b => state.unlocked[b.id]).length} / ${BADGES.length} 盏`;
+    const h = curHabit(), u = unl(h), m = moneyAll();
+    habitChips('#aw-habits');
+    $('#aw-count').textContent = `${BADGES.filter(b => u[b.id]).length} / ${BADGES.length} 盏`;
     $('#lanterns').innerHTML = BADGES.map((b, k) => {
-      const lit = !!state.unlocked[b.id], p = lit ? 1 : progress(b);
+      const lit = !!u[b.id], p = lit ? 1 : progress(b, h);
       return `<button type="button" class="lan${lit ? ' is-on' : ''}" data-badge="${b.id}" style="--k:${k}">
         <span class="lan-box">${lampTall(lit, p)}<b>${b.n}<small>${b.u}</small></b></span>
         <h5>${b.title}</h5><p>${lit ? '已点亮' : Math.floor(p * 100) + '%'}</p></button>`;
     }).join('');
-    wish(); buys();
+    /* 一件要花钱的事都没有（比如只填了时间），存钱罐就先收起来 */
+    $('#aw-money').hidden = !m.any; $('#aw-money-hint').hidden = m.any;
+    $('#aw-wish-k').textContent = state.habits.length > 1 ? '几件事省下的钱加在一起' : '用省下的钱去换';
+    if (m.any) { wish(m); buys(m); }
   }
 
   /* 心愿：一只小猪存钱罐，省下的钱一点点把它装满 */
-  function wish() {
-    const t = totals(), sym = curSymbol(), w = state.wish, el = $('#wish');
+  function wish(t = moneyAll()) {
+    const sym = curSymbol(), w = state.wish, el = $('#wish');
     const p = w ? clamp(t.money / w.price, 0, 1) : 0;
     if (!w) {
       el.innerHTML = `${bankSVG()}<div><p class="wish-name">还没有心愿</p>
@@ -2253,8 +2652,8 @@ const Awards = (() => {
     if (del) del.addEventListener('click', () => { state.wish = null; save(); close(); render(); });
   }
 
-  function buys() {
-    const t = totals(), sym = curSymbol(), rate = RATES[state.profile.currency] || 1;
+  function buys(t = moneyAll()) {
+    const sym = curSymbol(), rate = RATES[state.currency] || 1;
     $('#buys').innerHTML = BUYS.map(([ic, name, cny]) => {
       const price = nice(cny * rate), n = Math.floor(t.money / price);
       return `<div class="buy${n ? '' : ' is-locked'}">${icon(ic)}<span>${name}<small>约 ${sym}${nf(price, price < 10 ? 1 : 0)}</small></span>
@@ -2264,10 +2663,10 @@ const Awards = (() => {
 
   $('#lanterns').addEventListener('click', e => {
     const el = e.target.closest('[data-badge]'); if (!el) return;
-    const b = BADGES.find(x => x.id === el.dataset.badge);
-    if (state.unlocked[b.id]) { haptic(8); ceremony(b, 0, false); return; }
+    const h = curHabit(), b = BADGES.find(x => x.id === el.dataset.badge);
+    if (unl(h)[b.id]) { haptic(8); ceremony(b, 0, false, h); return; }
     haptic(5);
-    toast(b.ms ? `「${b.title}」还差 ${human(b.ms - elapsed())}` : `「${b.title}」还差 ${b.wins - wins().length} 次胜利`);
+    toast(b.ms ? `「${b.title}」还差 ${human(b.ms - elapsed(h))}` : `「${b.title}」还差 ${b.wins - wins(h).length} 次胜利`);
   });
   $('#wish').addEventListener('click', e => { if (e.target.closest('[data-wish]')) editWish(); });
 
@@ -2276,18 +2675,32 @@ const Awards = (() => {
 
 
 /* ============================================================
-   11. 设置：基础数据、导出 / 导入备份、清空
+   11. 设置：在戒的事（切换 / 再戒一件 / 改数据 / 删除）、外观、导出 / 导入备份、清空
    ============================================================ */
 const Settings = (() => {
-  let tipTimer = 0, reasonTimer = 0;
+  let tipTimer = 0, reasonTimer = 0, nameTimer = 0;
 
   function fill() {
-    const p = state.profile, active = document.activeElement;
+    const h = curHabit(), c = h.kind === 'custom', active = document.activeElement;
     const put = (sel, v) => { const el = $(sel); if (el !== active) el.value = v; };   // 正在编辑的那一格不去动它
+    habitChips('#set-habits', true);
+    $('#set-name-row').hidden = !c;
+    $('#set-date-k').textContent = c ? '开始时间' : '戒烟开始';
+    $('#set-reason-k').textContent = c ? '写给自己的话' : '戒烟理由';
+    $$('.set-group').forEach(g => { g.hidden = g.dataset.kind !== h.kind; });
     $('#set-date').max = toLocalInput(now());
-    put('#set-date', toLocalInput(p.quitAt)); put('#set-perday', p.perDay); put('#set-perpack', p.perPack);
-    put('#set-price', p.packPrice); put('#set-currency', p.currency); put('#set-reason', p.reason);
+    put('#set-date', toLocalInput(h.quitAt)); put('#set-reason', h.reason);
+    put('#set-currency', state.currency); put('#set-currency-c', state.currency);
+    if (c) { put('#set-name', h.name); put('#set-freq', h.freq); put('#set-minutes', h.minutes); put('#set-cost', h.cost); periodUI(h.period); }
+    else { put('#set-perday', h.perDay); put('#set-perpack', h.perPack); put('#set-price', h.packPrice); }
+    const del = $('#set-delete'), many = state.habits.length > 1;
+    del.hidden = !many;
+    if (many) del.textContent = `删除「${habitTitle(h)}」`;
     anchorNote(); renderPicks();
+  }
+  function periodUI(p) {
+    $$('#set-period button').forEach(b => { const on = b.dataset.period === p; b.classList.toggle('is-on', on); b.setAttribute('aria-checked', on); });
+    $('#set-freq-k').textContent = p === 'week' ? '每周大约' : '每天大约';
   }
 
   /* 外观：角色一排、配色一排。色板带着各自的 data-palette，所以能同时预览所有配色 */
@@ -2309,50 +2722,85 @@ const Settings = (() => {
 
   /* 记过「从现在重新开始」的复吸后，首页计时以那次复吸为起点。把这件事写在开始时间下面，并给一个改回去的按钮 */
   function anchorNote() {
-    const start = timerStart(), on = start > state.profile.quitAt;
+    const h = curHabit(), start = timerStart(h), on = start > h.quitAt;
     $('#set-anchor').hidden = !on; $('#set-date-row').classList.toggle('has-note', on);
-    if (on) { const d = new Date(start); $('#set-anchor-text').textContent = `首页计时从 ${d.getMonth() + 1}月${d.getDate()}日 ${pad(d.getHours())}:${pad(d.getMinutes())} 那次复吸后重新算起`; }
+    if (on) { const d = new Date(start); $('#set-anchor-text').textContent = `首页计时从 ${d.getMonth() + 1}月${d.getDate()}日 ${pad(d.getHours())}:${pad(d.getMinutes())} 那次${kindOf(h).slip}后重新算起`; }
   }
 
   /* 每一项改完立刻保存：熄掉不再成立的灯，刷新首页（新达到的灯会在一秒内点亮） */
   function commit(patch, msg = '已保存') {
-    Object.assign(state.profile, patch);
+    Object.assign(curHabit(), patch);
     Awards.sync();
     if (!save()) return;
-    App.refresh();
+    Home.applyHabit(); App.refresh();
     clearTimeout(tipTimer); tipTimer = setTimeout(() => toast(msg), 200);   // 连点步进器时只提示一次
     haptic(8);
   }
 
   function onDate() {
-    const el = $('#set-date'), t = fromLocalInput(el.value);
-    if (!t || t > now() + MIN) { toast('开始时间要是一个已经过去的时刻'); el.value = toLocalInput(state.profile.quitAt); return; }
+    const h = curHabit(), el = $('#set-date'), t = fromLocalInput(el.value);
+    if (!t || t > now() + MIN) { toast('开始时间要是一个已经过去的时刻'); el.value = toLocalInput(h.quitAt); return; }
     const quitAt = Math.min(t, now());
-    if (Math.abs(quitAt - state.profile.quitAt) < MIN) return;
-    const anchored = state.events.some(e => e.type === 'slip' && e.reset && e.t > quitAt);
-    commit({ quitAt }, anchored ? '已保存。首页计时仍从那次复吸后算起' : '已保存，计时和成就都已重新计算');
+    if (Math.abs(quitAt - h.quitAt) < MIN) return;
+    const anchored = evs(h).some(e => e.type === 'slip' && e.reset && e.t > quitAt);
+    commit({ quitAt }, anchored ? `已保存。首页计时仍从那次${kindOf(h).slip}后算起` : '已保存，计时和成就都已重新计算');
   }
-  function onCount(sel, key, max, label) {
-    const el = $(sel), v = Math.round(+el.value);
-    if (!(v >= 1)) { toast(`${label}至少是 1`); el.value = state.profile[key]; return; }
-    const n = clamp(v, 1, max); el.value = n;
-    if (n !== state.profile[key]) commit({ [key]: n });
+  function onCount(sel, key, min, max, label) {
+    const h = curHabit(), el = $(sel), v = Math.round(+el.value);
+    if (el.value === '' || !(v >= min)) { toast(`${label}至少是 ${min}`); el.value = h[key]; return; }
+    const n = clamp(v, min, max); el.value = n;
+    if (n !== h[key]) commit({ [key]: n });
   }
-  function onPrice() {
-    const el = $('#set-price'), v = +el.value;
-    if (el.value === '' || !(v >= 0)) { toast('填一下每包的价格'); el.value = state.profile.packPrice; return; }
-    if (v !== state.profile.packPrice) commit({ packPrice: v });
+  function onMoney(sel, key, label) {
+    const h = curHabit(), el = $(sel), v = +el.value;
+    if (el.value === '' || !(v >= 0)) { toast(`填一下${label}，没有就填 0`); el.value = h[key]; return; }
+    if (v !== h[key]) commit({ [key]: v });
+  }
+  /* 改名字：空着的时候先不存，离开输入框时换回原来的名字 */
+  function onName() {
+    clearTimeout(nameTimer);
+    const h = curHabit(), v = $('#set-name').value.trim().slice(0, 12);
+    if (h.kind !== 'custom' || !v || v === h.name) return;
+    if (state.habits.some(x => x !== h && x.kind === 'custom' && x.name === v)) { toast(`已经有「${v}」了`); return; }
+    commit({ name: v });
   }
   function onReason() {
     clearTimeout(reasonTimer);
     const v = $('#set-reason').value.trim().slice(0, 60);
-    if (v !== state.profile.reason) commit({ reason: v });
+    if (v !== curHabit().reason) commit({ reason: v });
   }
-  /* 把所有「从现在重新开始」撤掉：计时改回从戒烟开始算（复吸记录本身还在） */
+  /* 把这件事所有的「从现在重新开始」撤掉：计时改回从开始时间算（记录本身还在） */
   function undoAnchor() {
-    state.events.forEach(e => { if (e.type === 'slip' && e.reset) e.reset = false; });
+    evs(curHabit()).forEach(e => { if (e.type === 'slip' && e.reset) e.reset = false; });
     Awards.sync(); save(); App.refresh();
-    toast('计时已改为从戒烟开始算'); haptic(10);
+    toast('计时已改为从开始时间算'); haptic(10);
+  }
+
+  /* 按住不放才算数的按钮（删除一件事、清空所有数据共用）。键盘操作没有「按住」，退回到系统确认框 */
+  function holdToConfirm(btn, ms, onDone, question) {
+    let t = 0;
+    btn.addEventListener('pointerdown', () => { btn.classList.add('is-holding'); haptic(8); t = setTimeout(onDone, ms); });
+    ['pointerup', 'pointerleave', 'pointercancel'].forEach(n => btn.addEventListener(n, () => { clearTimeout(t); btn.classList.remove('is-holding'); }));
+    btn.addEventListener('contextmenu', e => e.preventDefault());
+    btn.addEventListener('click', e => { if (e.detail === 0 && window.confirm(question)) onDone(); });
+  }
+
+  /* 删除一件事：它的开始时间、记录和灯一起删掉，别的事不受影响（只剩一件时不提供，要删就用「清空」） */
+  function deleteHabit() {
+    const h = curHabit(); if (state.habits.length < 2) return;
+    const name = habitTitle(h), n = evs(h).length;
+    const { el, close } = openSheet(`
+      <h2 class="h2">删除「${esc(name)}」？</h2>
+      <p class="sub">它的开始时间、${n} 条记录和点亮的灯都会删除，而且找不回来。别的事不受影响。</p>
+      <button type="button" class="btn btn-danger btn-block hold" id="hold-habit"><i></i><span>按住不放，确认删除</span></button>
+      <button type="button" class="btn btn-ghost btn-block" data-close>留着</button>`);
+    holdToConfirm($('#hold-habit', el), 1200, () => {
+      state.habits = state.habits.filter(x => x.id !== h.id);
+      state.events = state.events.filter(e => e.habit !== h.id);
+      delete state.unlocked[h.id];
+      state.current = state.habits[0].id;
+      save(); haptic([30, 60, 30]); close(); Home.applyHabit(); App.refresh(); toast(`已删除「${name}」`);
+    }, `确定要删除「${name}」和它的 ${n} 条记录吗？此操作无法撤销。`);
   }
 
   /* 导出：手机上优先走系统分享面板（可存到「文件」或发给自己），否则直接下载 */
@@ -2378,16 +2826,17 @@ const Settings = (() => {
     download();
   }
 
+  /* 导入：第 1 版（只有戒烟）和第 2 版的备份都认 */
   async function importData(file) {
     let data;
     try {
       data = normalize(JSON.parse(await file.text()));
-      if (!data.profile) throw new Error('备份里没有基础数据');
+      if (!data.habits.length) throw new Error('备份里没有在戒的事');
     } catch (e) { toast('这个文件读不出来，确认是清息导出的备份吗？'); return; }
-    const d = new Date(data.profile.quitAt);
+    const names = data.habits.map(h => `「${esc(habitTitle(h))}」`).join('、');
     const { el, close } = openSheet(`
       <h2 class="h2">用这份备份覆盖现在的数据？</h2>
-      <p class="sub">备份里的戒烟开始于 ${d.getFullYear()} 年 ${d.getMonth() + 1} 月 ${d.getDate()} 日，共 ${data.events.length} 条记录。导入后，现在这台设备上的数据会被替换。</p>
+      <p class="sub">备份里有 ${names}，共 ${data.events.length} 条记录。导入后，现在这台设备上的数据会被替换。</p>
       <div class="row"><button type="button" class="btn btn-ghost" data-close>取消</button><button type="button" class="btn btn-primary" id="imp-yes">导入</button></div>`);
     $('#imp-yes', el).addEventListener('click', () => {
       state = data; Awards.sync(); save(); close(); refreshLook();
@@ -2400,31 +2849,38 @@ const Settings = (() => {
   function clearData() {
     const { el, close } = openSheet(`
       <h2 class="h2">清空所有数据？</h2>
-      <p class="sub">戒烟时间、每一次记录、点亮的灯和心愿都会被删除，而且找不回来。<br>如果只是想重新计时，记录复吸时选「从现在重新开始」就好。</p>
+      <p class="sub">所有在戒的事、每一次记录、点亮的灯和心愿都会被删除，而且找不回来。<br>如果只是想重新计时，记录的时候选「从现在重新开始」就好。</p>
       <button type="button" class="btn btn-danger btn-block hold" id="hold-clear"><i></i><span>按住不放，确认清空</span></button>
       <button type="button" class="btn btn-ghost btn-block" data-close>我再想想</button>`);
-    const btn = $('#hold-clear', el); let t = 0;
-    const wipe = () => {
+    holdToConfirm($('#hold-clear', el), 1600, () => {
       try { localStorage.removeItem(KEY); } catch (e) { /* 忽略 */ }
       state = blank(); haptic([30, 60, 30]); close(); refreshLook(); App.boot(); toast('已清空。随时可以重新开始。');
-    };
-    btn.addEventListener('pointerdown', () => { btn.classList.add('is-holding'); haptic(8); t = setTimeout(wipe, 1600); });
-    ['pointerup', 'pointerleave', 'pointercancel'].forEach(n => btn.addEventListener(n, () => { clearTimeout(t); btn.classList.remove('is-holding'); }));
-    btn.addEventListener('contextmenu', e => e.preventDefault());
-    /* 键盘操作没有「按住」，退回到系统确认框 */
-    btn.addEventListener('click', e => { if (e.detail === 0 && window.confirm('确定要清空所有数据吗？此操作无法撤销。')) wipe(); });
+    }, '确定要清空所有数据吗？此操作无法撤销。');
   }
 
   $('#set-date').addEventListener('change', onDate);
   $('#set-date').addEventListener('blur', onDate);
   $('#set-date').addEventListener('click', () => { try { $('#set-date').showPicker(); } catch (e) { /* 不支持就算了 */ } });
-  $('#set-perday').addEventListener('change', () => onCount('#set-perday', 'perDay', 200, '每天抽的支数'));
-  $('#set-perpack').addEventListener('change', () => onCount('#set-perpack', 'perPack', 100, '每包的支数'));
-  $('#set-price').addEventListener('change', onPrice);
-  $('#set-currency').addEventListener('change', () => commit({ currency: $('#set-currency').value }));
+  $('#set-perday').addEventListener('change', () => onCount('#set-perday', 'perDay', 1, 200, '每天抽的支数'));
+  $('#set-perpack').addEventListener('change', () => onCount('#set-perpack', 'perPack', 1, 100, '每包的支数'));
+  $('#set-price').addEventListener('change', () => onMoney('#set-price', 'packPrice', '每包的价格'));
+  $('#set-freq').addEventListener('change', () => onCount('#set-freq', 'freq', 1, 99, '次数'));
+  $('#set-minutes').addEventListener('change', () => onCount('#set-minutes', 'minutes', 0, 600, '每次的时间'));
+  $('#set-cost').addEventListener('change', () => onMoney('#set-cost', 'cost', '每次花的钱'));
+  $('#set-period').addEventListener('click', e => {
+    const b = e.target.closest('[data-period]'); if (!b || b.dataset.period === curHabit().period) return;
+    periodUI(b.dataset.period); commit({ period: b.dataset.period });
+  });
+  /* 货币几件事共用 */
+  ['#set-currency', '#set-currency-c'].forEach(s => $(s).addEventListener('change', e => { state.currency = e.target.value; save(); App.refresh(); toast('已保存'); haptic(8); }));
+  $('#set-name').addEventListener('input', () => { clearTimeout(nameTimer); nameTimer = setTimeout(onName, 700); });
+  $('#set-name').addEventListener('change', onName);
+  $('#set-name').addEventListener('blur', () => { const el = $('#set-name'); if (!el.value.trim()) el.value = curHabit().name; });
+  $('#set-name').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); e.target.blur(); } });
   $('#set-reason').addEventListener('input', () => { clearTimeout(reasonTimer); reasonTimer = setTimeout(onReason, 700); });
   $('#set-reason').addEventListener('change', onReason);
   $('#set-anchor-undo').addEventListener('click', undoAnchor);
+  $('#set-delete').addEventListener('click', deleteHabit);
   $('#pick-mascot').addEventListener('click', e => { const b = e.target.closest('[data-mascot]'); if (b && b.dataset.mascot !== look().mascot) setLook({ mascot: b.dataset.mascot }); });
   $('#pick-palette').addEventListener('click', e => { const b = e.target.closest('[data-pal]'); if (b && b.dataset.pal !== look().palette) setLook({ palette: b.dataset.pal }); });
   $('#btn-export').addEventListener('click', exportData);
@@ -2436,19 +2892,59 @@ const Settings = (() => {
 })();
 
 /* ============================================================
-   12. 启动
+   12. 在戒的事：首页那颗小签点开的面板（切换 / 再戒一件）
+   ============================================================ */
+const Habits = (() => {
+  function sheet() {
+    const cur = curHabit(), many = state.habits.length > 1;
+    const rows = state.habits.map(h => {
+      const on = h.id === cur.id, d = Math.floor(elapsed(h) / DAY) + 1;
+      return `<button type="button" class="habit-row${on ? ' is-on' : ''}" data-pick="${esc(h.id)}" aria-pressed="${on}">
+        <span><b>${esc(habitTitle(h))}</b><small class="num">第 ${d} 天 · 扛住 ${wins(h).length} 次</small></span>${on ? icon('check') : ''}</button>`;
+    }).join('');
+    const { el, close } = openSheet(`
+      <h2 class="h2">我在戒的事</h2>
+      <p class="sub" style="margin-top:-6px;font-size:14px">每件事有自己的计时、记录和灯笼。${many ? '在首页的月亮上左右滑，也能切换。' : ''}</p>
+      <div class="habit-list">${rows}</div>
+      ${state.habits.length < MAX_HABITS
+        ? `<button type="button" class="btn btn-ghost btn-block" id="hb-add">${icon('plus')}再戒一件事</button>`
+        : `<p class="hint" style="margin:0">最多同时记录 ${MAX_HABITS} 件事。</p>`}`);
+    el.addEventListener('click', e => {
+      const r = e.target.closest('[data-pick]');
+      if (r) {
+        close();
+        if (r.dataset.pick === state.current) return;
+        const ids = state.habits.map(h => h.id);
+        haptic(6); App.setHabit(r.dataset.pick, ids.indexOf(r.dataset.pick) > ids.indexOf(state.current) ? 1 : -1);
+        return;
+      }
+      if (e.target.closest('#hb-add')) { close(); Onboard.show({ add: true }); }
+    });
+  }
+  return { sheet };
+})();
+
+/* ============================================================
+   13. 启动
    ============================================================ */
 const App = {
   boot() {
     const opts = CURRENCIES.map(([code, sym, name]) => `<option value="${code}">${sym} ${name}</option>`).join('');
-    $('#ob-currency').innerHTML = opts; $('#set-currency').innerHTML = opts;
-    if (state.profile) { $('#onboard').hidden = true; this.enterMain(); }
+    $$('.cur-select').forEach(s => { s.innerHTML = opts; });
+    if (curHabit()) { $('#onboard').hidden = true; this.enterMain(); }
     else { $('#main').hidden = true; Onboard.show(); }
   },
-  enterMain() { $('#main').hidden = false; showTab('home', true); },
+  enterMain() { $('#main').hidden = false; Home.applyHabit(); showTab('home', true); },
+  /* 切换正在看的那件事：首页、洞察、成就、设置都跟着换。dir 是切换方向（首页的滑动动画用） */
+  setHabit(id, dir = 0) {
+    if (!state.habits.some(h => h.id === id)) return;
+    state.current = id; save();
+    Home.applyHabit(dir);
+    this.refresh();
+  },
   /* 数据变了之后，刷新首页和当前所在的页面 */
   refresh() {
-    if (!state.profile) return;
+    if (!curHabit()) return;
     Home.refresh();
     const r = { insights: Insights.render, awards: Awards.render, settings: Settings.fill }[currentTab];
     if (r) r();
@@ -2456,7 +2952,7 @@ const App = {
 };
 
 /* ============================================================
-   13. 图标：按当前角色和配色，现画主屏幕图标、网页小图标，生成 manifest —— 让应用保持单文件
+   14. 图标：按当前角色和配色，现画主屏幕图标、网页小图标，生成 manifest —— 让应用保持单文件
    ============================================================ */
 const Icons = (() => {
   const here = location.href.split(/[?#]/)[0];
@@ -2485,7 +2981,7 @@ const Icons = (() => {
     $('link[rel="icon"]').href = draw(img, 64);
     if (/^https?:/.test(here)) {
       const manifest = {
-        name: '清息', short_name: '清息', description: '一个安静、私密的戒烟记录。', lang: 'zh-CN',
+        name: '清息', short_name: '清息', description: '一个安静、私密的戒烟与节制记录。', lang: 'zh-CN',
         start_url: here, scope: here.replace(/[^/]*$/, ''), display: 'standalone', orientation: 'portrait',
         background_color: cssVar('--bg', '#060A0B'), theme_color: cssVar('--sky-1', '#0D1E28'),
         icons: [192, 512].map(s => ({ src: draw(img, s), sizes: `${s}x${s}`, type: 'image/png', purpose: 'any maskable' })),
@@ -2517,7 +3013,7 @@ const Icons = (() => {
 function refreshLook() { applyPalette(); swapMascots(); Icons.update(); }
 
 /* ============================================================
-   14. 视口兜底（只在 iPhone / iPad 的主屏幕模式里运行）
+   15. 视口兜底（只在 iPhone / iPad 的主屏幕模式里运行）
    ============================================================
    样式里那条 min-height 通常已经让系统给出完整视口，这里什么都不用做。
    万一某个 iOS 版本还是把视口截短了（页面从屏幕顶端画起，底边却够不到屏幕底），
