@@ -8,8 +8,8 @@
 
 <!-- PWA：添加到主屏幕后全屏运行 -->
 <meta name="theme-color" content="#0D1E28">
-<!-- 先把上次选的配色挂到根元素上，避免打开时闪一下默认配色 -->
-<script>try{var l=JSON.parse(localStorage.getItem('qingxi.v1')||'{}').look;if(l&&/^[a-z]+$/.test(l.palette||''))document.documentElement.setAttribute('data-palette',l.palette)}catch(e){}</script>
+<!-- 先把上次选的配色挂到根元素上，避免打开时闪一下默认配色；从 iPhone 主屏幕打开时再做个标记（见样式「iOS 主屏幕模式」） -->
+<script>try{if(navigator.standalone)document.documentElement.classList.add('is-standalone');var l=JSON.parse(localStorage.getItem('qingxi.v1')||'{}').look;if(l&&/^[a-z]+$/.test(l.palette||''))document.documentElement.setAttribute('data-palette',l.palette)}catch(e){}</script>
 <meta name="color-scheme" content="dark">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -59,9 +59,15 @@
 
 /* ---------- 2. 基础与外壳 ---------- */
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--font);font-size:16px;line-height:1.5;overflow:hidden;overscroll-behavior:none;
+html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--font);font-size:16px;line-height:1.5;overscroll-behavior:none;
   -webkit-text-size-adjust:100%;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+/* 整个界面都在 position:fixed 的 body 里，页面本身滚不动，所以 html、body 不需要（也不要）overflow:hidden */
 body{position:fixed;inset:0;width:100%;touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+/* iOS 主屏幕模式：iOS 26 起，页面比屏幕矮时，系统只给「屏幕高度 − 状态栏高度」的视口（WebKit 301108），
+   最下面那一截由系统填成背景色，底部导航就悬在半空。页面至少和屏幕一样高时，系统会给完整视口。
+   视口本来就完整、或者顶部没有安全区时，min() 取到的就是视口本身，页面不会因此多出能滚的部分。 */
+html.is-standalone{min-height:min(100lvh,calc(100% + env(safe-area-inset-top,0px)))}
+@media (display-mode:standalone){html{min-height:min(100lvh,calc(100% + env(safe-area-inset-top,0px)))}}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;touch-action:manipulation}
 input,textarea,select{font:inherit;color:inherit;-webkit-user-select:text;user-select:text}
 [hidden]{display:none!important}
@@ -2509,6 +2515,52 @@ const Icons = (() => {
 
 /* 数据整个换掉之后（清空、导入），外观也跟着换 */
 function refreshLook() { applyPalette(); swapMascots(); Icons.update(); }
+
+/* ============================================================
+   14. 视口兜底（只在 iPhone / iPad 的主屏幕模式里运行）
+   ============================================================
+   样式里那条 min-height 通常已经让系统给出完整视口，这里什么都不用做。
+   万一某个 iOS 版本还是把视口截短了（页面从屏幕顶端画起，底边却够不到屏幕底），
+   最下面那一截由系统填成背景色、网页画不进去，可系统仍报告 34pt 的底部安全区 ——
+   底部导航就会再被多垫高一截。这时把底部安全区减去被截掉的高度（一般就是 0），
+   让导航落到能显示的最底下。视口恢复完整后，自动换回系统给的安全区。 */
+const SafeBottom = (() => {   // 不叫 Viewport：新版 Chrome 自带一个同名的全局对象
+  const root = document.documentElement;
+  let probe = null, timer = 0;
+  /* 读出系统给的上、下安全区（env() 只能在样式里用，借一个看不见的小元素量出来） */
+  function insets() {
+    if (!probe) {
+      probe = document.createElement('i');
+      probe.setAttribute('aria-hidden', 'true');
+      probe.style.cssText = 'position:fixed;left:0;top:0;width:0;height:0;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)';
+      document.body.appendChild(probe);
+    }
+    const cs = getComputedStyle(probe);
+    return [parseFloat(cs.paddingTop) || 0, parseFloat(cs.paddingBottom) || 0];
+  }
+  function fit() {
+    const a = document.activeElement;
+    if (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return;   // 键盘开着时视口本来就会变，等收起再量
+    const w = window.innerWidth, h = window.innerHeight;
+    /* iOS 的 screen 宽高不随横竖屏交换，所以按当前方向取长边或短边 */
+    const full = h >= w ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height);
+    const [top, bottom] = insets(), cut = Math.round(full - h);
+    /* 被截掉的正好约等于状态栏高度：说明是上面说的那种情况 */
+    if (top > 0 && bottom > 0 && cut > 2 && cut <= top + 8) root.style.setProperty('--sab', Math.max(0, bottom - cut) + 'px');
+    else root.style.removeProperty('--sab');
+  }
+  const soon = (ms = 120) => { clearTimeout(timer); timer = setTimeout(fit, ms); };
+  if (navigator.standalone) {   // 只有 iOS 的主屏幕模式才有这个属性
+    fit(); setTimeout(fit, 400); setTimeout(fit, 1500);
+    addEventListener('resize', () => soon());
+    addEventListener('orientationchange', () => soon(500));
+    addEventListener('pageshow', () => soon());
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) soon(300); });
+    document.addEventListener('focusout', () => soon(500));   // 键盘收起之后再量一次
+  }
+  return { fit };
+})();
+
 App.boot();
 })();
 </script>
