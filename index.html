@@ -835,6 +835,13 @@ html,body,.app,.land{transition:background-color .5s ease}
 /* 空白模板：换照片的按钮 */
 .pe-photo{display:flex;align-items:center;gap:6px}
 .pe-photo .btn-ghost{flex:1}
+/* 裁剪照片：中间一个虚线圈（脸放这里），两边是狗耳朵的位置，圈里两个小圈对眼睛、一个小椭圆对鼻子 */
+.crop{position:relative;width:min(100%,320px);aspect-ratio:1;justify-self:center;border-radius:28px;overflow:hidden;background:#06080c;touch-action:none;cursor:grab;-webkit-user-select:none;user-select:none}
+.crop.is-drag{cursor:grabbing}
+.crop-img{position:absolute;left:50%;top:50%;max-width:none;transform-origin:50% 50%;pointer-events:none;-webkit-user-drag:none}
+.crop-guide{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.crop-zoom{width:min(100%,320px);justify-self:center}
+.crop-tip{margin-top:-6px;font-size:13.5px}
 
 /* 宠物本身：几层套在一起 —— 位置（含远近缩放）/ 跳 / 压扁拉伸和倒下 / 左右翻转 / 图。锚点都在脚下 */
 .ps-pet,.ps-ball{position:absolute;left:0;top:0;width:0;height:0;transform-origin:0 0;pointer-events:none;z-index:2;will-change:transform}
@@ -2929,9 +2936,9 @@ const PETS = {
     rel: { side: .995, back: 1, run: 1.067, happy: .912, confused: .928, eat: .918, wave: 1.113 },
     face: { side: -1, run: 1 }, spin: ['stand', 'side', 'back', '-side', 'stand'],
   },
-  /* 空白模板：一颗圆滚滚的小团子，脸可以换成你上传的照片（动作图由下面的 Tpl 现画） */
+  /* 空白模板：一只小狗，脸可以换成你上传的照片（动作图由下面的 Tpl 现画） */
   custom: {
-    name: '团子', blurb: '空白模板：可以换上你自己的照片当它的脸', treat: 'cookie', tpl: true,
+    name: '旺财', blurb: '狗狗模板：换上一张照片，就是它的脸', treat: 'bone', tpl: true,
     run: 'run', speed: 320, sit: 'sit', lie: '', sleep: 'sit', happy: 'happy', huh: 'stand', eat: 'eat', hello: 'happy', air: 'happy', sass: 'happy',
     rel: {}, face: {}, spin: ['stand', 'thin', 'back', 'thin', 'stand'],
   },
@@ -2955,9 +2962,9 @@ const LINES = {
     snatch: ['好耶，抢到了！'], hello: ['嗨！以后你就是我的主人啦！'], sass: ['嗨！'], yawn: ['哈——'],
   },
   custom: {
-    go: ['收到！', '马上来！'], jump: ['看我的！'], sit: ['坐好啦。'], lie: ['趴下啦～'], spin: ['转圈圈！'], dead: ['啊——（倒）'],
-    praise: ['嘿嘿～', '主人最好了！'], pet: ['好舒服～'], call: ['在呢！'], eat: ['好好吃！'], huh: ['这个我还不会……'], fetch: ['给你！'], wait: ['我能忍住……'],
-    snatch: ['抢到啦！'], hello: ['你好呀，主人！'], sass: ['嘿！'], yawn: ['哈——'],
+    go: ['汪！来了！', '冲呀！'], jump: ['汪！'], sit: ['乖乖坐好啦～', '坐！汪。'], lie: ['趴好了，汪。'], spin: ['追尾巴！'], dead: ['嗷呜……（倒）'],
+    praise: ['汪汪！', '最喜欢主人了！'], pet: ['嗷～好舒服', '再摸摸～'], call: ['汪？'], eat: ['骨头！是骨头！', '香！'], huh: ['汪……？还不会'], fetch: ['捡回来啦！汪！'], wait: ['……（流口水）'],
+    snatch: ['嗷呜！抢到了！'], hello: ['汪汪！以后你就是我的主人啦！'], sass: ['汪！'], yawn: ['哈——呜'],
   },
 };
 /* 口令。days = 你坚持到第几天，它才学会 */
@@ -2986,57 +2993,88 @@ const TREAT_SVG = {
   seed: '<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 4c5 4 7 10 6 16s-4 8-6 8-5-2-6-8 1-12 6-16z" fill="#3A2E2A"/><path d="M16 7c-1 6-1 13 0 19M13 10c-.6 4-.6 9 .4 14M19 10c.6 4 .6 9-.4 14" stroke="#E9DCC4" stroke-width="1.2" fill="none" stroke-linecap="round"/></svg>',
   noodle: '<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M10 14c0-5 1-8 3-10M14 14c0-5 .5-8 2.5-10M18 14c0-4 1-7 3-9" stroke="#F2CE6B" stroke-width="1.6" fill="none" stroke-linecap="round"/><path d="M4 15h24c0 7-5 12-12 12S4 22 4 15z" fill="#F4F1EA"/><path d="M4 15h24" stroke="#E0B85A" stroke-width="2"/><path d="M7 19c3 1.6 15 1.6 18 0" stroke="#E7A6A6" stroke-width="1.4" fill="none"/></svg>',
   cookie: '<svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="12" fill="#E2A866" stroke="#C4843F" stroke-width="1.4"/><circle cx="11" cy="12" r="1.8" fill="#5A3A22"/><circle cx="19" cy="10.5" r="1.5" fill="#5A3A22"/><circle cx="20.5" cy="18" r="1.9" fill="#5A3A22"/><circle cx="12.5" cy="20" r="1.6" fill="#5A3A22"/></svg>',
+  bone: '<svg viewBox="0 0 32 32" aria-hidden="true"><g transform="rotate(-30 16 16)" fill="#FFF4E2"><rect x="7" y="13" width="18" height="6" rx="1.5"/><circle cx="7" cy="12.6" r="3.8"/><circle cx="7" cy="19.4" r="3.8"/><circle cx="25" cy="12.6" r="3.8"/><circle cx="25" cy="19.4" r="3.8"/></g><path d="M11.5 19.2l9-5.2" stroke="#E5C59E" stroke-width="1.2" stroke-linecap="round"/></svg>',
 };
 
-/* 空白模板：一颗圆滚滚的小团子，有手有脚。脸默认是一张简单的笑脸，换成照片后就是你上传的那张。
-   每个动作现画一张（站、跑、坐、开心、吃、背面、侧着转到一半），照片只存在这台设备上 */
+/* 空白模板：一只小狗。大脑袋就是你上传的照片（裁成圆的那张），两只耷拉的耳朵、一圈红项圈、圆滚滚的身子、短短的腿和一条卷尾巴。
+   没有照片时是一张卡通狗脸。每个动作现画一张（站、跑、坐、作揖、抱着骨头吃、背面、转圈转到一半），照片只存在这台设备上 */
 const Tpl = (() => {
-  const W = 240, H = 264, R = 100, SKIN = '#F1CFB0', EDGE = 'rgba(105,66,38,.42)';
+  const W = 240, H = 264, RH = 78, RF = 70;   // 脑袋外圈的毛 / 里面放脸的圆（裁剪框里的虚线圈就是它）
+  const FUR = '#E2A866', EAR = '#A8672F', CREAM = '#F8E8D0', EDGE = 'rgba(92,52,20,.46)', COLLAR = '#E25A5E', TAG = '#F3C24F';
+  /* 每个动作的摆法：脑袋高度、身子、耳朵角度、前腿（位置和角度）、尾巴的样子 */
+  const POSE = {
+    stand: { hy: 92, body: [120, 200, 58, 46], hind: [[66, 236, 22, 16, 0], [174, 236, 22, 16, 0]], legs: [[93, 206, 248, 0], [147, 206, 248, 0]], ears: [.35, -.35, 98], tail: [[172, 202], [204, 196], [208, 166], [194, 160]] },
+    run: { hy: 90, body: [120, 198, 60, 44], hind: [[60, 228, 28, 14, -.5], [180, 232, 28, 14, .45]], legs: [[94, 204, 246, .42], [146, 204, 246, -.34]], ears: [1.15, -1.15, 80], tail: [[174, 198], [200, 192], [222, 190], [232, 184]] },
+    sit: { hy: 102, body: [120, 210, 58, 42], hind: [[70, 238, 30, 21, -.2], [170, 238, 30, 21, .2]], legs: [[103, 202, 248, 0], [137, 202, 248, 0]], ears: [.3, -.3, 108], tail: [[166, 246], [190, 254], [212, 248], [214, 232]] },
+    happy: { hy: 84, body: [120, 202, 54, 50], hind: [[96, 246, 22, 12, 0], [144, 246, 22, 12, 0]], legs: [], beg: true, ears: [.95, -.95, 72], tail: [[168, 196], [194, 182], [206, 150], [196, 136]] },
+    eat: { hy: 98, body: [120, 204, 58, 44], hind: [[66, 238, 22, 16, 0], [174, 238, 22, 16, 0]], legs: [[100, 208, 240, .1], [140, 208, 240, -.1]], bone: true, ears: [.25, -.25, 104], tail: [[172, 204], [204, 198], [208, 168], [194, 162]] },
+    back: { hy: 92, body: [120, 200, 58, 46], hind: [[66, 236, 22, 16, 0], [174, 236, 22, 16, 0]], legs: [[93, 206, 248, 0], [147, 206, 248, 0]], ears: [.35, -.35, 98], back: true, tail: [[120, 214], [126, 188], [134, 164], [120, 150]] },
+  };
   let frames = {};
+  /* 圆角矩形（不用 ctx.roundRect：iOS 16 以前没有） */
+  const rr = (x, X, Y, w, h, r) => { r = Math.min(r, w / 2, h / 2); x.moveTo(X + r, Y); x.arcTo(X + w, Y, X + w, Y + h, r); x.arcTo(X + w, Y + h, X, Y + h, r); x.arcTo(X, Y + h, X, Y, r); x.arcTo(X, Y, X + w, Y, r); x.closePath(); };
   function draw(photo, kind) {
     const c = document.createElement('canvas'); c.width = W; c.height = H;
     const x = c.getContext('2d');
-    const blob = (cx, cy, rx, ry, rot = 0) => { x.beginPath(); x.ellipse(cx, cy, rx, ry, rot, 0, Math.PI * 2); x.fillStyle = SKIN; x.fill(); x.lineWidth = 3; x.strokeStyle = EDGE; x.stroke(); };
-    const cy = kind === 'sit' ? 130 : 116, sx = kind === 'thin' ? .3 : 1;
-    const FEET = { stand: [[86, 246], [154, 246]], run: [[70, 238], [166, 250]], sit: [[74, 250], [166, 250]], happy: [[86, 246], [154, 246]], eat: [[86, 246], [154, 246]], back: [[92, 248], [148, 248]], thin: [[120, 248]] };
-    const ARMS = { stand: [[24, 156, .45], [216, 156, -.45]], run: [[28, 132, 1], [212, 168, -.15]], sit: [[26, 170, .35], [214, 170, -.35]], happy: [[34, 54, -.55], [206, 54, .55]], eat: [], back: [[22, 150, .45], [218, 150, -.45]], thin: [] };
-    for (const [fx, fy] of FEET[kind]) blob(fx, fy, kind === 'sit' ? 32 : 28, 14);   // 脚和手先画，身子压在上面
-    for (const [ax, ay, r] of ARMS[kind]) blob(ax, ay, 15, 24, r);
-    x.save(); x.translate(W / 2, cy); x.scale(sx, 1);
-    x.beginPath(); x.arc(0, 0, R, 0, Math.PI * 2); x.fillStyle = '#FFF6EC'; x.fill();   // 外面一圈奶白色的边
-    x.save(); x.beginPath(); x.arc(0, 0, R - 9, 0, Math.PI * 2); x.clip();
-    if (kind === 'back' || !photo) {
-      const g = x.createRadialGradient(-30, -40, 8, 0, 0, R); g.addColorStop(0, '#FFF1E4'); g.addColorStop(1, kind === 'back' ? '#E2BE9C' : '#F2D3B6');
-      x.fillStyle = g; x.fillRect(-R, -R, R * 2, R * 2);
-      if (kind !== 'back') face(x);
-    } else x.drawImage(photo, -(R - 9), -(R - 9), (R - 9) * 2, (R - 9) * 2);
-    const hl = x.createRadialGradient(-36, -46, 4, 0, 0, R);   // 一点立体感：左上亮、右下暗
-    hl.addColorStop(0, 'rgba(255,255,255,.2)'); hl.addColorStop(.55, 'rgba(255,255,255,0)'); hl.addColorStop(1, 'rgba(70,35,10,.2)');
-    x.fillStyle = hl; x.fillRect(-R, -R, R * 2, R * 2);
+    if (kind === 'thin') { x.translate(W / 2, 0); x.scale(.3, 1); x.translate(-W / 2, 0); kind = 'stand'; }   // 转圈转到一半：侧着，压扁
+    const P = POSE[kind];
+    const ell = (cx, cy, rx, ry, rot, fill, line = true) => { x.beginPath(); x.ellipse(cx, cy, rx, ry, rot, 0, Math.PI * 2); x.fillStyle = fill; x.fill(); if (line) { x.lineWidth = 2.6; x.strokeStyle = EDGE; x.stroke(); } };
+    const curve = (pts, w, col) => { x.beginPath(); x.moveTo(...pts[0]); x.bezierCurveTo(...pts[1], ...pts[2], ...pts[3]); x.lineCap = 'round'; x.lineWidth = w; x.strokeStyle = col; x.stroke(); };
+    const leg = (cx, top, bottom, rot) => {
+      x.save(); x.translate(cx, top); x.rotate(rot);
+      const h = bottom - top; x.beginPath(); rr(x, -12, -6, 24, h + 6, 12); x.fillStyle = FUR; x.fill(); x.lineWidth = 2.6; x.strokeStyle = EDGE; x.stroke();
+      ell(0, h, 16, 10, 0, CREAM);   // 爪子
+      x.lineWidth = 1.8; x.beginPath(); x.moveTo(-5, h - 3); x.lineTo(-5, h + 4); x.moveTo(5, h - 3); x.lineTo(5, h + 4); x.stroke();
+      x.restore();
+    };
+    const tail = pts => { curve(pts, 20, EDGE); curve(pts, 15, FUR); ell(pts[3][0], pts[3][1], 7, 7, 0, CREAM, false); };
+    /* 从后往前画：后腿、尾巴、身子、肚子、前腿、耳朵、项圈、脑袋、铭牌 */
+    for (const [hx, hy, rx, ry, r] of P.hind) ell(hx, hy, rx, ry, r, FUR);
+    if (!P.back) tail(P.tail);
+    const [bx, by, brx, bry] = P.body;
+    ell(bx, by, brx, bry, 0, FUR);
+    if (P.back) tail(P.tail); else ell(bx, by + 10, brx * .55, bry * .66, 0, CREAM, false);
+    for (const [lx, top, bottom, r] of P.legs) leg(lx, top, bottom, r);
+    if (P.beg) {   // 作揖：两只前爪抬到胸前
+      for (const s of [-1, 1]) { x.save(); x.translate(120 + s * 26, P.hy + 84); x.rotate(s * -.5); x.beginPath(); rr(x, -10, -4, 20, 30, 10); x.fillStyle = FUR; x.fill(); x.lineWidth = 2.6; x.strokeStyle = EDGE; x.stroke(); x.restore(); ell(120 + s * 20, P.hy + 108, 13, 10, 0, CREAM); }
+    }
+    if (P.bone) { bone(x, 120, 238); ell(100, 240, 15, 10, 0, CREAM); ell(140, 240, 15, 10, 0, CREAM); }   // 两只前爪按着骨头
+    const [el, er, ey] = P.ears;
+    ell(120 - 70, ey, 21, 44, el, EAR); ell(120 + 70, ey, 21, 44, er, EAR);
+    x.beginPath(); rr(x, 78, P.hy + 72, 84, 14, 7); x.fillStyle = COLLAR; x.fill(); x.lineWidth = 2.4; x.strokeStyle = EDGE; x.stroke();
+    /* 脑袋：外圈一圈毛，里面是脸（照片 / 卡通狗脸；背面就是后脑勺的毛） */
+    x.beginPath(); x.arc(120, P.hy, RH, 0, Math.PI * 2); x.fillStyle = FUR; x.fill(); x.lineWidth = 3; x.strokeStyle = EDGE; x.stroke();
+    x.save(); x.beginPath(); x.arc(120, P.hy, RF, 0, Math.PI * 2); x.clip();
+    if (P.back || !photo) {
+      const g = x.createRadialGradient(96, P.hy - 30, 6, 120, P.hy, RF); g.addColorStop(0, '#F2C88E'); g.addColorStop(1, '#D8964F');
+      x.fillStyle = g; x.fillRect(120 - RF, P.hy - RF, RF * 2, RF * 2);
+      if (!P.back) dogFace(x, 120, P.hy);
+    } else x.drawImage(photo, 120 - RF, P.hy - RF, RF * 2, RF * 2);
+    const hl = x.createRadialGradient(92, P.hy - 34, 4, 120, P.hy, RF);   // 一点立体感：左上亮、边上暗
+    hl.addColorStop(0, 'rgba(255,255,255,.16)'); hl.addColorStop(.6, 'rgba(255,255,255,0)'); hl.addColorStop(1, 'rgba(60,30,8,.22)');
+    x.fillStyle = hl; x.fillRect(120 - RF, P.hy - RF, RF * 2, RF * 2);
     x.restore();
-    x.lineWidth = 3; x.strokeStyle = EDGE; x.beginPath(); x.arc(0, 0, R, 0, Math.PI * 2); x.stroke();
-    x.restore();
-    if (kind === 'back') blob(W / 2, cy + R - 6, 13, 12);   // 背面的小尾巴
-    if (kind === 'eat') { cookie(x, W / 2, 194); blob(94, 200, 14, 21, .55); blob(146, 200, 14, 21, -.55); }   // 两只手捧着饼干
+    x.beginPath(); x.arc(120, P.hy, RF, 0, Math.PI * 2); x.lineWidth = 2; x.strokeStyle = 'rgba(92,52,20,.28)'; x.stroke();
+    if (!P.back) { ell(120, P.hy + 90, 8, 8, 0, TAG); ell(120, P.hy + 90, 3, 3, 0, '#D9962E', false); }   // 项圈上的小铭牌
     return c.toDataURL('image/png');
   }
-  /* 没有照片时的脸：两只眼睛、一个笑、两团腮红 */
-  function face(x) {
-    x.fillStyle = 'rgba(244,127,152,.32)';
-    for (const s of [-1, 1]) { x.beginPath(); x.ellipse(s * 54, 18, 15, 9, 0, 0, Math.PI * 2); x.fill(); }
-    x.fillStyle = '#3B2A22';
-    for (const s of [-1, 1]) { x.beginPath(); x.ellipse(s * 32, -6, 8.5, 11.5, 0, 0, Math.PI * 2); x.fill(); }
-    x.fillStyle = '#fff';
-    for (const s of [-1, 1]) { x.beginPath(); x.arc(s * 32 - 3, -10, 3, 0, Math.PI * 2); x.fill(); }
-    x.strokeStyle = '#3B2A22'; x.lineWidth = 5; x.lineCap = 'round';
-    x.beginPath(); x.arc(0, 14, 15, .18 * Math.PI, .82 * Math.PI); x.stroke();
+  /* 没有照片时的卡通狗脸：浅色的嘴巴一圈、两只眼睛、豆豆眉、黑鼻头、小嘴和舌头 */
+  function dogFace(x, cx, cy) {
+    const e = (ex, ey, rx, ry, col) => { x.beginPath(); x.ellipse(cx + ex, cy + ey, rx, ry, 0, 0, Math.PI * 2); x.fillStyle = col; x.fill(); };
+    e(0, 24, 38, 29, CREAM);
+    for (const s of [-1, 1]) { e(s * 24, -26, 7, 5, CREAM); e(s * 26, -6, 7.5, 9.5, '#2E2119'); e(s * 26 - 2.6, -9.6, 2.6, 2.6, '#fff'); }
+    e(0, 40, 8, 9, '#F28C9A');
+    e(0, 13, 11, 8, '#2E2119'); e(-3, 10.5, 3.4, 2, 'rgba(255,255,255,.55)');
+    x.strokeStyle = '#2E2119'; x.lineWidth = 3; x.lineCap = 'round';
+    x.beginPath(); x.moveTo(cx, cy + 20); x.lineTo(cx, cy + 27); x.arc(cx - 8, cy + 27, 8, 0, Math.PI * .85); x.moveTo(cx + 16, cy + 27); x.arc(cx + 8, cy + 27, 8, 0, Math.PI, false); x.stroke();
   }
-  function cookie(x, cx, cy) {
-    x.beginPath(); x.arc(cx, cy, 24, 0, Math.PI * 2); x.fillStyle = '#E2A866'; x.fill(); x.lineWidth = 3; x.strokeStyle = '#C4843F'; x.stroke();
-    x.fillStyle = '#5A3A22';
-    for (const [dx, dy, r] of [[-9, -7, 3.6], [7, -10, 3], [10, 6, 3.8], [-6, 10, 3.2]]) { x.beginPath(); x.arc(cx + dx, cy + dy, r, 0, Math.PI * 2); x.fill(); }
+  function bone(x, cx, cy) {
+    x.save(); x.translate(cx, cy); x.fillStyle = '#FFF6E8'; x.strokeStyle = EDGE; x.lineWidth = 2.2;
+    x.beginPath(); rr(x, -24, -6, 48, 12, 4);
+    for (const [bx, by] of [[-24, -6], [-24, 6], [24, -6], [24, 6]]) { x.moveTo(bx + 7, by); x.arc(bx, by, 7, 0, Math.PI * 2); }
+    x.fill(); x.restore();
   }
-  /* make：按这张照片（没有就用笑脸）把所有动作画好，最近用过的几张记着不重画（选照片时的预览也用它）。
+  /* make：按这张照片（没有就用卡通狗脸）把所有动作画好，最近用过的几张记着不重画（选照片时的预览也用它）。
      use：草坪上的那只换成这张照片 */
   const cache = new Map();
   function make(photo) {
@@ -3054,16 +3092,75 @@ const Tpl = (() => {
   use('');
   return { make, use, frames: () => frames };
 })();
-/* 读一张照片：裁成正方形（竖着拍的稍微偏上，脸一般在上半部分），缩到 240px，存成小 JPEG */
-async function readPhoto(file) {
-  const url = URL.createObjectURL(file);
-  try {
-    const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = url; });
-    const w = img.naturalWidth, h = img.naturalHeight, s = Math.min(w, h);
-    const c = document.createElement('canvas'); c.width = c.height = 240;
-    c.getContext('2d').drawImage(img, (w - s) / 2, h > w ? (h - s) * .3 : 0, s, s, 0, 0, 240, 240);
-    return c.toDataURL('image/jpeg', .86);
-  } finally { URL.revokeObjectURL(url); }
+/* 裁剪照片：照片可以拖动、两指捏合（或拖滑块）缩放，把脸放进中间的虚线圈里。
+   虚线圈就是模板里放脸的那个圆；圈两边是狗耳朵的位置，圈里两个小圈对眼睛、下面的小椭圆对鼻子。
+   确认后只取圈里那一块，缩到 280px，存成小 JPEG（只存在这台设备上） */
+const CROP_GUIDE = `<svg class="crop-guide" viewBox="0 0 100 100" aria-hidden="true">
+  <path d="M0 0H100V100H0ZM50 15A35 35 0 1 0 50.01 15Z" fill="rgba(5,7,11,.58)" fill-rule="evenodd"/>
+  <g fill="none" stroke="rgba(255,255,255,.5)" stroke-width=".6" stroke-dasharray="1.6 1.3" stroke-linecap="round">
+    <path d="M27 26C17 32 12 50 15 64c2 7 8 7 11 2"/><path d="M73 26C83 32 88 50 85 64c-2 7-8 7-11 2"/>
+  </g>
+  <circle cx="50" cy="50" r="35" fill="none" stroke="#fff" stroke-width=".8" stroke-dasharray="2.4 1.7"/>
+  <g fill="none" stroke="rgba(255,255,255,.6)" stroke-width=".5" stroke-dasharray="1.2 1"><circle cx="37" cy="46" r="4.2"/><circle cx="63" cy="46" r="4.2"/><ellipse cx="50" cy="57" rx="4.6" ry="3.2"/></g>
+</svg>`;
+function cropPhoto(file) {
+  return new Promise(resolve => {
+    const url = URL.createObjectURL(file), img = new Image();
+    let settled = false;
+    const done = v => { if (settled) return; settled = true; URL.revokeObjectURL(url); resolve(v); };
+    img.onerror = () => { toast('这张照片读不出来，换一张试试'); done(null); };
+    img.onload = () => {
+      const { el, close } = openSheet(`
+        <h2 class="h2">把脸放进虚线圈里</h2>
+        <p class="sub crop-tip">拖动照片挪位置，两指捏合或拖下面的滑块放大缩小。眼睛对准两个小圈、鼻子对准下面的小椭圆，效果最好。</p>
+        <div class="crop" id="crop"><img class="crop-img" alt="" draggable="false">${CROP_GUIDE}</div>
+        <input class="range crop-zoom" id="crop-zoom" type="range" min="1" max="4" step="0.01" value="1" aria-label="放大缩小">
+        <div class="row"><button type="button" class="btn btn-ghost" data-close>取消</button><button type="button" class="btn btn-primary" id="crop-ok">用这张</button></div>`);
+      $$('[data-close], .sheet-bg', el).forEach(b => b.addEventListener('click', () => done(null)));
+      const box = $('#crop', el), im = $('.crop-img', el), zoom = $('#crop-zoom', el);
+      const nw = img.naturalWidth, nh = img.naturalHeight;
+      im.src = url; im.style.width = nw + 'px'; im.style.height = nh + 'px';
+      /* s = 缩放（1 = 照片的短边刚好填满虚线圈）；tx, ty = 照片中心离框中心的偏移 */
+      let D = 0, base = 1, s = 1, tx = 0, ty = 0;
+      const k = () => base * s;
+      const clampPan = () => { const mx = Math.max(0, (nw * k() - D) / 2), my = Math.max(0, (nh * k() - D) / 2); tx = clamp(tx, -mx, mx); ty = clamp(ty, -my, my); };
+      const paint = () => {
+        im.style.transform = `translate(-50%,-50%) translate(${tx.toFixed(1)}px,${ty.toFixed(1)}px) scale(${k().toFixed(5)})`;
+        zoom.value = s; zoom.style.setProperty('--fill', `${((s - 1) / 3 * 100).toFixed(1)}%`);
+      };
+      const zoomTo = ns => { ns = clamp(ns, 1, 4); tx *= ns / s; ty *= ns / s; s = ns; clampPan(); paint(); };   // 以虚线圈为中心缩放
+      D = box.clientWidth * .7; base = D / Math.min(nw, nh);
+      if (nh > nw) ty = (nh * k() - D) / 2 * .45;   // 竖着拍的：脸一般在上半部分
+      clampPan(); paint();
+      /* 一根手指拖动，两根手指捏合缩放 */
+      const pts = new Map(); let g0 = null;
+      const snap = () => {
+        const a = [...pts.values()], n = a.length;
+        return { s, tx, ty, n, c: n ? [a.reduce((m, p) => m + p[0], 0) / n, a.reduce((m, p) => m + p[1], 0) / n] : [0, 0], d: n > 1 ? Math.hypot(a[0][0] - a[1][0], a[0][1] - a[1][1]) : 0 };
+      };
+      box.addEventListener('pointerdown', e => { try { box.setPointerCapture(e.pointerId); } catch (err) { /* 不支持就算了 */ } pts.set(e.pointerId, [e.clientX, e.clientY]); g0 = snap(); box.classList.add('is-drag'); });
+      box.addEventListener('pointermove', e => {
+        if (!pts.has(e.pointerId)) return;
+        pts.set(e.pointerId, [e.clientX, e.clientY]);
+        const n0 = snap();
+        if (n0.n !== g0.n) { g0 = n0; return; }
+        if (n0.n > 1 && g0.d) { const ns = clamp(g0.s * n0.d / g0.d, 1, 4), r = ns / g0.s; s = ns; tx = g0.tx * r + (n0.c[0] - g0.c[0]); ty = g0.ty * r + (n0.c[1] - g0.c[1]); }
+        else { tx = g0.tx + (n0.c[0] - g0.c[0]); ty = g0.ty + (n0.c[1] - g0.c[1]); }
+        clampPan(); paint();
+      });
+      const up = e => { pts.delete(e.pointerId); g0 = snap(); if (!pts.size) box.classList.remove('is-drag'); };
+      box.addEventListener('pointerup', up); box.addEventListener('pointercancel', up);
+      box.addEventListener('wheel', e => { e.preventDefault(); zoomTo(s * Math.exp(-e.deltaY * .0015)); }, { passive: false });
+      zoom.addEventListener('input', () => zoomTo(+zoom.value));
+      $('#crop-ok', el).addEventListener('click', () => {
+        const kk = k(), r = D / 2 / kk, cx = nw / 2 - tx / kk, cy = nh / 2 - ty / kk;
+        const c = document.createElement('canvas'); c.width = c.height = 280;
+        c.getContext('2d').drawImage(img, cx - r, cy - r, r * 2, r * 2, 0, 0, 280, 280);
+        haptic(8); close(); done(c.toDataURL('image/jpeg', .86));
+      });
+    };
+    img.src = url;
+  });
 }
 
 /* 学新口令看「坚持得最久的一段」：几件事里取最长的那段计时（和成就的灯一样，复吸过也不会忘） */
@@ -3654,7 +3751,8 @@ const Pet = (() => {
   $('#pet-photo').addEventListener('change', async e => {
     const f = e.target.files[0]; e.target.value = '';
     if (!f || !photoCb) return;
-    try { photoCb(await readPhoto(f)); } catch (err) { toast('这张照片读不出来，换一张试试'); }
+    const cb = photoCb, d = await cropPhoto(f);   // 先裁剪：把脸放进虚线圈里
+    if (d) cb(d);
   });
   $('#adopt-photo').addEventListener('click', () => choosePhoto(d => { pendingPhoto = d; adoptUI(); haptic(8); }));
   function render() {
@@ -3695,7 +3793,7 @@ const Pet = (() => {
     const { el, close } = openSheet(`
       <h2 class="h2">我的宠物</h2>
       <div class="adopt-picks" id="pe-picks"></div>
-      <div class="pe-photo" id="pe-photo-row" hidden><button type="button" class="btn btn-ghost" id="pe-photo"></button><button type="button" class="btn btn-text" id="pe-photo-clear">用回笑脸</button></div>
+      <div class="pe-photo" id="pe-photo-row" hidden><button type="button" class="btn btn-ghost" id="pe-photo"></button><button type="button" class="btn btn-text" id="pe-photo-clear">用回卡通脸</button></div>
       <label class="field"><span>名字</span><input class="input" id="pe-name" maxlength="8" autocomplete="off" value="${esc(me().name)}"></label>
       <div class="row"><button type="button" class="btn btn-ghost" data-close>取消</button><button type="button" class="btn btn-primary" id="pe-save">好了</button></div>`);
     const paint = () => Tpl.make(photo).then(f => {
