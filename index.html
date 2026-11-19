@@ -875,11 +875,15 @@ html,body,.app,.land{transition:background-color .5s ease}
 .ball::before{content:"";position:absolute;inset:-14px;border-radius:50%}
 .ps-mouth.ball{top:auto;bottom:calc(var(--ph,112px) * .3);z-index:2;pointer-events:none}
 
-/* 零食罐，拖出来的零食，掉在草地上的零食 */
-.ps-jar{position:absolute;z-index:4;right:calc(16px + var(--sar));bottom:14px;display:flex;align-items:center;gap:6px;height:46px;padding:0 15px 0 10px;border-radius:999px;
-  background:rgba(255,255,255,.07);box-shadow:inset 0 0 0 1px var(--hair-2);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);touch-action:none}
-.ps-jar svg{width:28px;height:28px}
-.ps-jar b{font-size:14px;font-weight:500;color:var(--tx-2)}
+/* 零食罐：一只放在草地上的玻璃罐，零食装在里面；下面一行小字是还剩几块。拖出来的零食，掉在草地上的零食 */
+.ps-jar{position:absolute;z-index:4;right:calc(12px + var(--sar));bottom:4px;display:flex;flex-direction:column;align-items:center;gap:1px;min-width:56px;padding:4px 6px 2px;touch-action:none;transition:transform .35s var(--spring)}
+.ps-jar:active{transform:scale(.93)}
+.jar-glass{display:block;width:40px;height:48px}
+.jar-glass svg{display:block;width:100%;height:100%}
+.jar-in{position:absolute;left:50%;top:23px;width:24px;height:24px;margin-left:-12px;transform:rotate(-14deg);transition:opacity .3s}
+.jar-in svg{display:block;width:100%;height:100%}
+.ps-jar.is-empty .jar-in{opacity:0}
+.ps-jar b{font-size:11.5px;font-weight:500;line-height:1.2;color:var(--tx-2);text-shadow:0 1px 6px rgba(0,0,0,.85)}
 .ps-carry,.ps-dropped{position:absolute;width:36px;height:36px;margin:-26px 0 0 -18px;pointer-events:none;z-index:5;filter:drop-shadow(0 6px 10px rgba(0,0,0,.45))}
 .ps-carry svg,.ps-dropped svg{width:100%;height:100%}
 .ps-dropped{z-index:1;margin-top:-30px;animation:tdrop .45s var(--spring)}
@@ -927,16 +931,19 @@ html,body,.app,.land{transition:background-color .5s ease}
 .sm-shelf{flex:1;min-height:0;width:calc(100% + 52px + var(--sal) + var(--sar));margin:0 calc(-26px - var(--sar)) 0 calc(-26px - var(--sal));padding:6px calc(26px + var(--sar)) 18px calc(26px + var(--sal));
   overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;-webkit-mask-image:linear-gradient(180deg,transparent,#000 16px,#000 calc(100% - 26px),transparent);mask-image:linear-gradient(180deg,transparent,#000 16px,#000 calc(100% - 26px),transparent)}
 .sm-shelf::-webkit-scrollbar{display:none}
-.sm-tier{margin:14px 4px 10px;font-size:12px;font-weight:600;letter-spacing:.2em;color:var(--tx-3)}
-.sm-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 10px}
+.sm-tier{margin:16px 2px 6px;font-size:12px;font-weight:600;letter-spacing:.2em;color:var(--tx-3)}
+/* 货架：烟盒立在一层层木板上，名字像价签一样贴在板子下面（不用一格一格的框） */
+.sm-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:0;row-gap:20px}
 .sm-grid.is-cigar{grid-template-columns:repeat(2,minmax(0,1fr))}
-.sm-item{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0;padding:14px 6px 11px;border-radius:20px;background:rgba(255,255,255,.035);box-shadow:inset 0 0 0 1px var(--hair);
-  transition:transform .35s var(--spring),background .3s}
-.sm-item:active{transform:scale(.95);background:rgba(255,255,255,.07)}
-.sm-item .sm-art{display:block;width:70%;height:auto;margin-bottom:10px;filter:drop-shadow(0 10px 12px rgba(0,0,0,.5))}
-.sm-grid.is-cigar .sm-art{width:86%}
-.sm-item b{max-width:100%;font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sm-item small{font-size:11.5px;line-height:1.35;color:var(--tx-3);text-align:center;overflow-wrap:anywhere}
+.sm-item{display:flex;flex-direction:column;align-items:center;gap:1px;min-width:0;padding:0 4px 2px;transition:transform .35s var(--spring)}
+.sm-item:active{transform:scale(.95)}
+.sm-stand{position:relative;align-self:stretch;display:flex;align-items:flex-end;justify-content:center;height:104px;margin:0 -4px 13px}
+.sm-grid.is-cigar .sm-stand{height:96px}
+.sm-stand::after{content:"";position:absolute;left:0;right:0;bottom:-7px;height:7px;background:linear-gradient(180deg,#8A6446 0,#6B4A33 30%,#4A3222 100%);box-shadow:0 7px 12px -2px rgba(0,0,0,.55)}
+.sm-item .sm-art{position:relative;z-index:1;display:block;width:auto;height:92px;max-width:84%;object-fit:contain;filter:drop-shadow(0 6px 6px rgba(0,0,0,.45))}
+.sm-grid.is-cigar .sm-art{height:auto;width:86%;max-height:88px}
+.sm-item b{max-width:100%;font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sm-item small{font-size:11px;line-height:1.35;color:var(--tx-3);text-align:center;overflow-wrap:anywhere}
 /* 宠物页用的是底部弹层 */
 .sm-sheet{display:grid;gap:12px}
 .sm-sheet .sub{font-size:14px;line-height:1.6;margin-top:-4px}
@@ -1006,13 +1013,15 @@ html,body,.app,.land{transition:background-color .5s ease}
 .sm-cig.is-gone{transition:opacity .9s,transform .9s;opacity:0}
 @media (prefers-reduced-motion:reduce){.sm-cig.is-in{animation:none}.sm-cig.is-lighting .sm-flame{animation:none}}
 
-/* 宠物页：左下角「来一根」，抽的时候变成「掐灭」；烟插在它嘴角 */
-.ps-cigbtn{position:absolute;z-index:4;left:calc(16px + var(--sal));bottom:14px;display:flex;align-items:center;gap:6px;height:46px;padding:0 15px 0 10px;border-radius:999px;
-  background:rgba(255,255,255,.07);box-shadow:inset 0 0 0 1px var(--hair-2);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);color:var(--tx-2);transition:transform .35s var(--spring),color .3s}
-.ps-cigbtn:active{transform:scale(.94)}
-.ps-cigbtn svg{width:28px;height:28px}
-.ps-cigbtn b{font-size:14px;font-weight:500}
-.ps-cigbtn.is-on{color:var(--rose);box-shadow:inset 0 0 0 1px rgba(242,158,146,.35)}
+/* 宠物页：左下角草地上放着一包烟（点它 = 来一根）；抽的时候换成一只烟灰缸（点它 = 掐灭）。烟插在它嘴角 */
+.ps-cigbtn{position:absolute;z-index:4;left:calc(10px + var(--sal));bottom:4px;display:flex;flex-direction:column;align-items:center;gap:1px;min-width:60px;padding:4px 6px 2px;transition:transform .35s var(--spring)}
+.ps-cigbtn:active{transform:scale(.93)}
+.cb-art{position:relative;display:grid;place-items:end center;width:56px;height:48px}
+.cb-art::after{content:"";position:absolute;left:8px;right:8px;bottom:0;height:5px;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.5),rgba(0,0,0,0))}
+.cb-art img{position:relative;z-index:1;display:block;width:auto;height:40px;margin-bottom:2px;transform:rotate(-16deg);filter:drop-shadow(0 3px 3px rgba(0,0,0,.45))}
+.cb-art svg{position:relative;z-index:1;display:block;width:56px;height:38px}
+.ps-cigbtn b{font-size:11.5px;font-weight:500;line-height:1.2;color:var(--tx-2);text-shadow:0 1px 6px rgba(0,0,0,.85)}
+.ps-cigbtn.is-on b{color:var(--rose)}
 .ps-smoke{position:absolute;inset:0;width:100%;height:100%;z-index:5;pointer-events:none}
 .ps-cig{position:absolute;width:0;height:0;transform:scaleX(var(--sx,1)) rotate(var(--droop,-14deg));pointer-events:none}
 .ps-cig .sm-cig{position:absolute;right:0;top:0;margin-top:calc(var(--th) * -.5);transform:none;--rot:var(--droop,-14deg)}
@@ -1020,6 +1029,49 @@ html,body,.app,.land{transition:background-color .5s ease}
 .ps-pet .ps-body{transition:rotate .25s var(--out),scale .45s var(--out)}
 .ps-pet.is-cough .ps-img{animation:pcough .16s ease-in-out 5}
 @keyframes pcough{0%,100%{transform:translateX(-50%)}30%{transform:translateX(calc(-50% - 2px)) translateY(1px) rotate(-2deg)}70%{transform:translateX(calc(-50% + 2px)) rotate(2deg)}}
+
+
+/* ---------- 12. 分享卡片 ---------- */
+/* 首页数字下面一行小字链接（不是按钮框） */
+.share-link{display:flex;align-items:center;justify-content:center;gap:7px;margin:2px auto 0;min-height:44px;padding:0 8px;font-size:13.5px;color:var(--mint);transition:opacity .2s}
+.share-link:active{opacity:.6}
+.share-link .ic{width:16px;height:16px}
+/* 点灯仪式里的「分享这一刻」 */
+.veil-share{position:relative;z-index:1;margin-top:6px;min-height:44px;padding:0 10px;font-size:14px;letter-spacing:.08em;color:var(--mint)}
+
+/* 弹层：上面是预览，下面几行选项 —— 选项只是几个字，选中的字变亮、下面一个小点，不加框 */
+.sh{display:grid;gap:12px}
+.sh-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.sh-note{font-size:12px;color:var(--tx-3)}
+.sh-pre{position:relative;justify-self:center;width:min(60vw,240px);aspect-ratio:3/4;margin:4px 0 6px;border-radius:12px;overflow:hidden;background:rgba(255,255,255,.04);box-shadow:0 22px 44px -16px rgba(0,0,0,.8)}
+.sh-pre img{display:block;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .35s;-webkit-touch-callout:default;-webkit-user-select:auto;user-select:auto}
+.sh-pre.is-ready img{opacity:1}
+.sh-opt{display:grid;grid-template-columns:68px minmax(0,1fr);align-items:center;gap:8px;min-height:44px;border-top:1px solid var(--hair)}
+.sh-opt>span{font-size:13px;color:var(--tx-3)}
+.sh-pick{display:flex;flex-wrap:wrap;align-items:center;gap:0 18px}
+.sh-pick button{position:relative;min-height:44px;padding:0 1px;font-size:15px;color:var(--tx-3);transition:color .25s}
+.sh-pick button.is-on{color:var(--tx)}
+.sh-pick button.is-on::after{content:"";position:absolute;left:50%;bottom:5px;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:var(--mint)}
+.sh-who{gap:0 8px}
+.sh-who button{display:grid;place-items:center;width:42px;opacity:.38;transition:opacity .25s,transform .35s var(--spring)}
+.sh-who button.is-on{opacity:1;transform:translateY(-2px)}
+.sh-who button.is-on::after{bottom:1px}
+.sh-who img{width:34px;height:34px;object-fit:contain}
+.sh-moon{width:24px;height:24px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff,var(--moon-b) 50%,var(--moon-d));box-shadow:0 0 10px rgba(var(--moon-glow),.5)}
+.sh-say{grid-template-columns:68px minmax(0,1fr) auto}
+.sh-line{min-width:0;height:44px;border:0;border-radius:0;background:none;outline:none;font:inherit;font-size:15px;color:var(--tx);caret-color:var(--mint);-webkit-user-select:text;user-select:text;-webkit-appearance:none;appearance:none}
+.sh-line::placeholder{color:var(--tx-4)}
+.sh-swap{min-height:44px;padding:0 2px;font-size:13px;color:var(--mint)}
+.sh .row{margin-top:6px}
+
+/* 大图：长按存到相册 */
+.sh-full{position:absolute;inset:0;z-index:60;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:calc(var(--sat) + 24px) 24px calc(var(--sab) + 24px);
+  background:rgba(4,7,8,.95);opacity:0;transition:opacity .3s}
+.sh-full.is-open{opacity:1}
+.sh-full img{display:block;width:auto;max-width:100%;max-height:72vh;border-radius:10px;-webkit-touch-callout:default;-webkit-user-select:auto;user-select:auto;pointer-events:auto}
+.sh-full p{font-size:14px;letter-spacing:.06em;color:var(--tx-2)}
+.sh-full-row{display:flex;align-items:center;gap:8px}
+.sh-full-row .btn{min-height:46px;padding:0 20px;font-size:15px}
 
 
 </style>
@@ -1220,6 +1272,8 @@ html,body,.app,.land{transition:background-color .5s ease}
             <div class="stat"><span class="stat-ico"></span><div class="v num"><small class="pre"></small><span class="val"></span><small class="unit"></small></div><p class="k"></p></div>
             <div class="stat"><span class="stat-ico"></span><div class="v num"><small class="pre"></small><span class="val"></span><small class="unit"></small></div><p class="k"></p></div>
           </div>
+          <!-- 把这些数字画成一张图，发给朋友（见脚本「分享卡片」一节） -->
+          <button type="button" class="share-link rise" id="btn-share" style="--i:4"><svg class="ic"><use href="#i-plane"/></svg>把这些数字做成一张卡片，发给朋友</button>
 
           <div class="sec-head rise" style="--i:5"><h2 class="h2" id="tl-title">恢复之路</h2><small id="tl-count"></small></div>
           <div class="tl rise" id="timeline" style="--i:6"></div>
@@ -1318,8 +1372,9 @@ html,body,.app,.land{transition:background-color .5s ease}
           <svg class="ps-front" id="ps-front" preserveAspectRatio="none" aria-hidden="true"></svg>
           <div class="ps-fx" id="pet-fx" aria-hidden="true"></div>
           <canvas class="ps-smoke" id="pet-smoke-fx" aria-hidden="true"></canvas>
-          <button type="button" class="ps-jar" id="pet-jar" aria-label="零食：拖出来喂它"><span id="pet-jar-ico"></span><b class="num" id="pet-jar-n">×0</b></button>
-          <button type="button" class="ps-cigbtn" id="pet-smoke" aria-label="给它点一根假烟"><svg viewBox="0 0 32 32" aria-hidden="true"><g transform="rotate(32 16 17)"><rect x="4" y="14.6" width="17" height="4.8" rx="1" fill="#F4F1EA"/><rect x="21" y="14.6" width="7.5" height="4.8" rx="1" fill="#D69B5C"/><rect x="3" y="14.6" width="2.6" height="4.8" rx="1.1" fill="#FF6A1E"/></g><path d="M6.4 8.6c-1.8-1.9.8-3-.9-5.3M10.4 7.4c-1.8-1.9.8-3-.9-5.3" stroke="rgba(255,255,255,.55)" stroke-width="1.3" fill="none" stroke-linecap="round"/></svg><b id="pet-smoke-label">来一根</b></button>
+          <!-- 草地上的两样东西：右边一只玻璃零食罐（零食在罐子里），左边一包烟（抽的时候换成烟灰缸，点它就掐灭） -->
+          <button type="button" class="ps-jar" id="pet-jar" aria-label="零食罐：拖出一块喂它"><span class="jar-glass" aria-hidden="true"><svg viewBox="0 0 40 48"><ellipse cx="20" cy="45.6" rx="15" ry="2.4" fill="rgba(0,0,0,.42)"/><rect x="11" y="2" width="18" height="6" rx="2" fill="#B98A5E"/><rect x="11" y="6.2" width="18" height="1.8" fill="#8E633C"/><path d="M10.5 9.5h19c2.6 0 4.5 2 4.5 4.6V39c0 3.3-2.7 6-6 6H12c-3.3 0-6-2.7-6-6V14.1c0-2.6 2-4.6 4.5-4.6z" fill="rgba(215,240,235,.1)" stroke="rgba(225,248,242,.5)" stroke-width="1.2"/><path d="M9.7 15v20.5" stroke="rgba(255,255,255,.42)" stroke-width="1.8" stroke-linecap="round"/><path d="M13 9.6c0 1.6 1 2.6 2.5 2.6h9c1.5 0 2.5-1 2.5-2.6" fill="none" stroke="rgba(225,248,242,.3)" stroke-width="1"/></svg></span><span class="jar-in" id="pet-jar-ico"></span><b class="num" id="pet-jar-n">×0</b></button>
+          <button type="button" class="ps-cigbtn" id="pet-smoke" aria-label="给它点一根假烟"><span class="cb-art" id="pet-smoke-art" aria-hidden="true"></span><b id="pet-smoke-label">来一根</b></button>
         </div>
         <input type="file" id="pet-photo" accept="image/*" hidden>
         <p class="pet-hint rise" id="pet-hint" style="--i:2"></p>
@@ -3023,7 +3078,7 @@ const Smoke = (() => {
     return tiers.map(t => `<p class="sm-tier">${t}${kind === 'cigar' ? '雪茄' : '卷烟'}</p><div class="sm-grid${kind === 'cigar' ? ' is-cigar' : ''}">` +
       list.filter(b => b.tier === t).map(b => { const R = real(b);
         const art = R ? `<img class="sm-art" src="${url(b, 'pack')}" width="${R.ps[0]}" height="${R.ps[1]}" alt="" draggable="false">` : `<canvas class="sm-art" data-art="${b.id}"></canvas>`;
-        return `<button type="button" class="sm-item" data-brand="${b.id}">${art}<b>${esc(b.name)}</b><small>${esc(b.sub)}</small></button>`; }).join('') + '</div>').join('');
+        return `<button type="button" class="sm-item" data-brand="${b.id}"><span class="sm-stand">${art}</span><b>${esc(b.name)}</b><small>${esc(b.sub)}</small></button>`; }).join('') + '</div>').join('');
   }
   function bindShelf(root, list, onPick) {
     let kind = 'cig';
@@ -3397,7 +3452,8 @@ const Smoke = (() => {
   $('#sm-next').addEventListener('click', () => { endSes(); cr.hooks.ask(); });
   $('#sm-again').addEventListener('click', () => { endSes(); showPick(); });
 
-  return { start, stop, end: endSes, pickSheet, mount, session, FX, BRANDS, ready, thick, real };
+  const packURL = id => { const b = BY[id]; return b && real(b) ? url(b, 'pack') : ''; };   // 宠物草地上放的那包烟
+  return { start, stop, end: endSes, pickSheet, mount, session, FX, BRANDS, ready, thick, real, packURL };
 })();
 
 
@@ -3770,12 +3826,18 @@ const Awards = (() => {
 
   function ceremony(b, more, celebrate, h = curHabit()) {
     const who = state.habits.length > 1 ? `${esc(habitTitle(h))} · ` : '';
-    openVeil(`
+    const v = openVeil(`
       <div class="ul-scene" style="--i:0"><div class="ul-lamp">${lampTall(true)}<b>${b.n}<small>${b.u}</small></b></div>${pig('is-happy')}</div>
       <p class="eyebrow" style="--i:2;color:var(--gold)">${who}${celebrate ? '点亮了一盏灯' : '这盏灯亮着'}</p>
       <h1 class="h1" style="--i:3">${b.title}</h1>
       <p class="sub" style="--i:4;max-width:290px">${badgeDesc(b, h.kind)}</p>
-      ${more ? `<p class="sub muted" style="--i:5;font-size:13px">同时还点亮了另外 ${more} 盏</p>` : ''}`);
+      ${more ? `<p class="sub muted" style="--i:5;font-size:13px">同时还点亮了另外 ${more} 盏</p>` : ''}
+      <button type="button" class="veil-share" style="--i:6" data-share>${celebrate ? '分享这一刻' : '把这盏灯分享出去'}</button>`);
+    /* 分享：收起幕布，打开分享卡片（卡片上写的就是这盏灯） */
+    $('[data-share]', v).addEventListener('click', e => {
+      e.stopPropagation(); v.classList.remove('is-open'); setTimeout(() => v.remove(), REDUCED ? 0 : 450);
+      Share.open({ habit: h, badge: b });
+    });
     if (celebrate) { haptic([20, 80, 20, 80, 60]); setTimeout(() => FX.burst(.5, .34, 110, true), 380); }
   }
 
@@ -4587,18 +4649,27 @@ const Pet = (() => {
   /* ---------- 假装抽一根：给它点一根（假的，见「假装抽一根」一节）。长按草地它就吸一口，松开吐出来；
      第一口一定呛着，之后时不时也呛；抽完了头晕、嫌弃，顺便劝你也别抽 ---------- */
   const smokeBtn = $('#pet-smoke'), smokeFx = Smoke.FX($('#pet-smoke-fx'));
-  let smoking = null;
+  /* 草地上那包烟：上次给它抽的那个牌子；抽着的时候换成一只烟灰缸（里面一个烟头，还冒着一缕烟） */
+  const ASHTRAY = `<svg viewBox="0 0 56 38" aria-hidden="true"><ellipse cx="28" cy="25" rx="24" ry="9" fill="#4F5B60"/><ellipse cx="28" cy="21" rx="24" ry="9" fill="#A9B8BC"/>
+    <ellipse cx="28" cy="21.6" rx="17" ry="5.6" fill="#353F43"/><path d="M5 19.6c1.8.7 3.6.7 5.4 0M45.6 19.6c1.8.7 3.6.7 5.4 0" stroke="#353F43" stroke-width="2.6" stroke-linecap="round"/>
+    <ellipse cx="23" cy="23" rx="5" ry="1.6" fill="#8D9294" opacity=".8"/><g transform="rotate(-10 33 19)"><rect x="26" y="17.6" width="14" height="3.2" rx="1.2" fill="#ECE8E0"/><rect x="38" y="17.6" width="5" height="3.2" rx="1.2" fill="#D59A5B"/></g>
+    <path d="M27 14c-2.2-2.6 1.3-3.8-.6-6.8" stroke="rgba(255,255,255,.4)" stroke-width="1.3" fill="none" stroke-linecap="round"/></svg>`;
+  const PACK = `<svg viewBox="0 0 56 38" aria-hidden="true"><g transform="rotate(-16 28 22)"><rect x="18" y="6" width="22" height="30" rx="2" fill="#F4F1EA"/><rect x="18" y="6" width="22" height="9" rx="2" fill="#C8262C"/><rect x="18" y="29" width="22" height="7" fill="#C8262C"/></g></svg>`;
+  let smoking = null, lastBrand = 'hts';
   function smokeLabel() {
     $('#pet-smoke-label').textContent = smoking ? '掐灭' : '来一根';
+    const u = Smoke.packURL(lastBrand);
+    $('#pet-smoke-art').innerHTML = smoking ? ASHTRAY : u ? `<img src="${u}" alt="" draggable="false">` : PACK;
     smokeBtn.classList.toggle('is-on', !!smoking);
     smokeBtn.setAttribute('aria-label', smoking ? '把烟掐灭' : '给它点一根假烟');
   }
+  smokeLabel();
   smokeBtn.addEventListener('click', () => {
     if (!active || !me().kind) return;
     if (smoking) { endSmoke(false); return; }
     haptic(6);
     Smoke.pickSheet(`给${me().name}来一根`, '假的，没有尼古丁。挑好以后长按草地，它就吸一口。')
-      .then(b => b && Smoke.ready(b).then(() => { if (active && me().kind && !smoking) act(aSmoke, b); }));
+      .then(b => b && Smoke.ready(b).then(() => { if (active && me().kind && !smoking) { lastBrand = b.id; act(aSmoke, b); } }));
   });
   async function aSmoke(my, b) {
     if (!await standUp(my)) return;
@@ -4758,6 +4829,7 @@ const Pet = (() => {
     $('#pet-sub').textContent = `${PETS[p.kind].name} · 听了你 ${nf(p.obeyed || 0)} 次`;
     $('#pet-jar-ico').innerHTML = TREAT_SVG[PETS[p.kind].treat];
     $('#pet-jar-n').textContent = '×' + treatsLeft();
+    jar.classList.toggle('is-empty', !treatsLeft());   // 吃完了：罐子是空的
   }
   function guide() {
     const p = me(); if (!p.kind) return;
@@ -4873,6 +4945,279 @@ const Pet = (() => {
     if (carry) { carry.remove(); carry = null; }
   }
   return { enter, leave, render };
+})();
+
+
+/* ============================================================
+   12. 分享卡片：把「坚持了几天、少抽几支、省下多少」画成一张图，配上月亮和角色，发朋友圈或者群里。
+       整张图在手机上用 canvas 现画（1080 × 1440，3:4），不经过任何服务器；
+       「发给朋友」走系统的分享面板（可以直接选微信）；不支持的话显示大图，长按存到相册。
+       版式像一张夜景海报：不用框，字直接落在画面上，数字之间只用发丝线隔开
+   ============================================================ */
+const Share = (() => {
+  const W = 1080, H = 1440, L = 96;
+  const css = k => getComputedStyle(document.documentElement).getPropertyValue(k).trim();
+  const FONT = () => css('--font') || 'sans-serif', NUM = () => css('--num') || FONT();
+  const font = (x, w, px, num) => { x.font = `${w} ${Math.round(px)}px ${num ? NUM() : FONT()}`; };
+  const rng = seed => () => (seed = (seed * 1664525 + 1013904223) % 4294967296) / 4294967296;
+
+  /* 三种样式。夜空跟着「设置 → 外观」里选的配色走；晨光、素笺是固定的 */
+  const THEMES = {
+    night: () => ({ sky: [css('--sky-1'), css('--sky-2'), css('--bg')], moon: [css('--moon-a'), css('--moon-b'), css('--moon-c'), css('--moon-d')], glow: css('--moon-glow'),
+      far: css('--hill'), near: css('--bg'), ac: css('--mint'), gold: css('--gold'), tx: '#F2F5F4', tx2: 'rgba(242,245,244,.74)', tx3: 'rgba(242,245,244,.48)', hair: 'rgba(255,255,255,.16)', stars: 1, rim: .32, shade: 'rgba(0,0,0,.4)' }),
+    dawn: () => ({ sky: ['#111936', '#2F2D66', '#8F5F88', '#EBA088'], moon: ['#FFFDF8', '#FBF0E4', '#ECD8C6', '#D7BBA5'], glow: '255,236,214',
+      far: '#45324F', near: '#1C1427', ac: '#FFCFA6', gold: '#FFD9A8', tx: '#FFF8F2', tx2: 'rgba(255,248,242,.82)', tx3: 'rgba(255,248,242,.58)', hair: 'rgba(255,255,255,.26)', stars: .65, rim: .5, sun: true, shade: 'rgba(0,0,0,.4)' }),
+    paper: () => ({ sky: ['#F7F2E8', '#F2EBDD', '#EDE4D2'], moon: ['#FFF7E2', '#F7E1AC', '#ECC77F', '#D9A85E'], glow: '236,196,120',
+      far: '#E2D8C5', near: '#D3C6AE', ac: '#2E8C76', gold: '#A0631F', tx: '#1E2A28', tx2: 'rgba(30,42,40,.76)', tx3: 'rgba(30,42,40,.52)', hair: 'rgba(30,42,40,.2)', stars: 0, rim: 0, paper: true, shade: 'rgba(70,50,20,.2)' }),
+  };
+
+  /* 放在卡片上的数字：和首页一样的算法，多一个「扛住冲动」 */
+  function items(h) {
+    const t = totals(h), out = [];
+    const money = () => { const [v, u] = fmtMoney(t.money); return { key: 'money', label: '省下', pre: curSymbol(), text: v, unit: u }; };
+    if (h.kind === 'smoke') {
+      out.push({ key: 'cigs', label: '少抽', text: nf(Math.floor(t.count)), unit: '支' });
+      if (unitCost(h) > 0) out.push(money());
+      const [lv, lu] = fmtMin(t.lifeMin); out.push({ key: 'life', label: '找回生命', text: lv, unit: lu });
+    } else {
+      out.push({ key: 'count', label: '少了', text: nf(Math.floor(t.count)), unit: '次' });
+      if (h.minutes > 0) { const [v, u] = fmtMin(t.timeMin); out.push({ key: 'time', label: '腾出', text: v, unit: u }); }
+      if (h.cost > 0) out.push(money());
+    }
+    out.push({ key: 'wins', label: '扛住冲动', text: nf(wins(h).length), unit: '次' });
+    return out;
+  }
+  const quotes = h => QUOTES[h.kind === 'custom' ? 'custom' : 'smoke'];
+
+  /* 陪着上镜的角色：设置里的那几位；宠物是空白模板（换了脸的狗狗）时，它也可以 */
+  function cast() {
+    const list = MASCOTS.map(m => { const a = art(m.id); return { id: m.id, name: m.name, head: a ? a.head : '', body: a ? a.body : '' }; });
+    if (state.pet.kind === 'custom') { const f = Tpl.frames(); list.push({ id: 'pet', name: state.pet.name, head: f.stand || '', body: f.stand || '' }); }
+    return list;
+  }
+  const IMGS = {};
+  const loadImg = src => !src ? Promise.resolve(null) : IMGS[src] || (IMGS[src] = new Promise(res => { const i = new Image(); i.onload = () => res(i); i.onerror = () => res(null); i.src = src; }));
+
+  /* ---------- 画 ---------- */
+  const RIDGE = [[0, 1252], [220, 1226], [420, 1200], [600, 1210], [780, 1220], [930, 1238], [1080, 1222]];   // 近处山脊：两段三次贝塞尔
+  const bez = (a, b, c, d, t) => { const u = 1 - t; return u * u * u * a + 3 * u * u * t * b + 3 * u * t * t * c + t * t * t * d; };
+  function ridgeY(X) {   // 山脊在 X 处的高度（角色要站在上面）
+    let best = 1222, bd = 1e9;
+    for (const s of [0, 3]) for (let t = 0; t <= 1; t += .02) {
+      const P = RIDGE.slice(s, s + 4), px = bez(P[0][0], P[1][0], P[2][0], P[3][0], t), py = bez(P[0][1], P[1][1], P[2][1], P[3][1], t);
+      if (Math.abs(px - X) < bd) { bd = Math.abs(px - X); best = py; }
+    }
+    return best;
+  }
+  function sparkle(x, cx, cy, s) {
+    x.beginPath(); x.moveTo(cx, cy - s); x.quadraticCurveTo(cx, cy, cx + s, cy); x.quadraticCurveTo(cx, cy, cx, cy + s); x.quadraticCurveTo(cx, cy, cx - s, cy); x.quadraticCurveTo(cx, cy, cx, cy - s); x.fill();
+  }
+  function stars(x, T, seed) {
+    if (!T.stars) return;
+    const r = rng(seed * 7919 + 17); x.fillStyle = '#fff';
+    for (let i = 0; i < 130; i++) {
+      const sx = r() * W, sy = r() * 1090, s = .7 + r() * 2.1, a = (.18 + r() * .7) * T.stars * (T.sun ? Math.max(0, 1 - sy / 980) : 1);
+      if (Math.hypot(sx - 838, sy - 238) < 160) continue;   // 月亮那里不放
+      x.globalAlpha = a; x.beginPath(); x.arc(sx, sy, s, 0, Math.PI * 2); x.fill();
+    }
+    for (let i = 0; i < 7; i++) {
+      const sx = 40 + r() * (W - 80), sy = 50 + r() * 860, s = 7 + r() * 9;
+      if (Math.hypot(sx - 838, sy - 238) < 190) continue;
+      x.globalAlpha = (.45 + r() * .45) * T.stars; sparkle(x, sx, sy, s);
+    }
+    x.globalAlpha = 1;
+  }
+  function grain(x) {   // 素笺：一点纸的颗粒
+    const r = rng(7); x.fillStyle = 'rgba(90,70,40,.05)';
+    for (let i = 0; i < 2600; i++) x.fillRect(r() * W, r() * H, 1 + r() * 1.5, 1 + r() * 1.5);
+  }
+  /* 月亮，外面一圈是去下一站的进度（和首页的月亮一样） */
+  function moon(x, T, h, ms) {
+    const cx = 838, cy = 238, R = 98, OR = R + 46;
+    let g = x.createRadialGradient(cx, cy, R * .7, cx, cy, R * 3.4);
+    g.addColorStop(0, `rgba(${T.glow},${T.paper ? .32 : .3})`); g.addColorStop(1, `rgba(${T.glow},0)`);
+    x.fillStyle = g; x.fillRect(cx - R * 3.4, cy - R * 3.4, R * 6.8, R * 6.8);
+    const M = miles(h.kind), i = M.findIndex(m => m.ms > ms), prev = i > 0 ? M[i - 1].ms : 0;
+    const p = i === -1 ? 1 : clamp((ms - prev) / (M[i].ms - prev), 0, 1);
+    x.lineWidth = 2; x.strokeStyle = T.hair; x.beginPath(); x.arc(cx, cy, OR, 0, Math.PI * 2); x.stroke();
+    if (p > .004) { x.lineWidth = 5; x.lineCap = 'round'; x.strokeStyle = T.ac; x.beginPath(); x.arc(cx, cy, OR, -Math.PI / 2, -Math.PI / 2 + p * Math.PI * 2); x.stroke(); }
+    const a = -Math.PI / 2 + p * Math.PI * 2, hx = cx + Math.cos(a) * OR, hy = cy + Math.sin(a) * OR;
+    g = x.createRadialGradient(hx, hy, 0, hx, hy, 26); g.addColorStop(0, T.ac); g.addColorStop(.25, T.ac); g.addColorStop(1, 'rgba(255,255,255,0)');
+    x.globalAlpha = .55; x.fillStyle = g; x.fillRect(hx - 26, hy - 26, 52, 52); x.globalAlpha = 1;
+    x.fillStyle = T.paper ? T.ac : '#fff'; x.beginPath(); x.arc(hx, hy, 6.5, 0, Math.PI * 2); x.fill();
+    g = x.createRadialGradient(cx - R * .32, cy - R * .36, R * .08, cx, cy, R);
+    g.addColorStop(0, T.moon[0]); g.addColorStop(.5, T.moon[1]); g.addColorStop(.84, T.moon[2]); g.addColorStop(1, T.moon[3]);
+    x.fillStyle = g; x.beginPath(); x.arc(cx, cy, R, 0, Math.PI * 2); x.fill();
+    for (const [dx, dy, rr] of [[-.3, -.1, .2], [.26, .22, .14], [.06, -.44, .1], [-.08, .42, .09], [.4, -.18, .07]]) {   // 环形山
+      const X = cx + dx * R, Y = cy + dy * R, r2 = rr * R;
+      x.fillStyle = 'rgba(80,90,80,.09)'; x.beginPath(); x.arc(X, Y, r2, 0, Math.PI * 2); x.fill();
+      x.strokeStyle = 'rgba(255,255,255,.35)'; x.lineWidth = 2; x.beginPath(); x.arc(X, Y, r2, Math.PI * .75, Math.PI * 1.6); x.stroke();
+    }
+  }
+  function hills(x, T) {
+    x.fillStyle = T.far; x.beginPath(); x.moveTo(0, 1170);
+    x.bezierCurveTo(170, 1128, 330, 1106, 520, 1122); x.bezierCurveTo(700, 1138, 860, 1098, 1080, 1126); x.lineTo(1080, H); x.lineTo(0, H); x.closePath(); x.fill();
+    const ridge = () => { x.beginPath(); x.moveTo(...RIDGE[0]); x.bezierCurveTo(...RIDGE[1], ...RIDGE[2], ...RIDGE[3]); x.bezierCurveTo(...RIDGE[4], ...RIDGE[5], ...RIDGE[6]); };
+    x.fillStyle = T.near; ridge(); x.lineTo(1080, H); x.lineTo(0, H); x.closePath(); x.fill();
+    if (T.rim) {   // 山脊被月光描了一道边
+      const g = x.createLinearGradient(0, 0, W, 0); g.addColorStop(0, `rgba(${T.glow},0)`); g.addColorStop(.62, `rgba(${T.glow},${T.rim})`); g.addColorStop(1, `rgba(${T.glow},.05)`);
+      x.strokeStyle = g; x.lineWidth = 2.2; ridge(); x.stroke();
+    }
+    const r = rng(3); x.strokeStyle = T.paper ? 'rgba(90,80,50,.35)' : 'rgba(255,255,255,.1)'; x.lineWidth = 2; x.lineCap = 'round';   // 几丛草
+    for (const gx of [70, 180, 470, 560, 1010]) { const gy = ridgeY(gx) + 4; for (let k = -2; k <= 2; k++) { x.beginPath(); x.moveTo(gx + k * 5, gy); x.quadraticCurveTo(gx + k * 6, gy - 10, gx + k * 9 + (r() - .5) * 6, gy - 16 - r() * 10); x.stroke(); } }
+  }
+  /* 一盏小灯笼（里程碑前面的那个点） */
+  function lantern(x, cx, cy) {
+    x.fillStyle = '#C99B6A'; x.fillRect(cx - 7, cy - 21, 14, 4); x.fillRect(cx - 6, cy + 14, 12, 4);
+    x.strokeStyle = '#C99B6A'; x.lineWidth = 2; x.beginPath(); x.moveTo(cx, cy - 27); x.lineTo(cx, cy - 21); x.moveTo(cx, cy + 18); x.lineTo(cx, cy + 25); x.stroke();
+    const g = x.createRadialGradient(cx - 3, cy - 4, 1, cx, cy, 17); g.addColorStop(0, '#FFF3D2'); g.addColorStop(.45, '#F9CB7C'); g.addColorStop(1, '#DE8536');
+    x.fillStyle = g; x.beginPath(); x.ellipse(cx, cy - 1, 15, 16, 0, 0, Math.PI * 2); x.fill();
+    x.strokeStyle = 'rgba(150,80,20,.45)'; x.lineWidth = 1.4; x.beginPath(); x.ellipse(cx, cy - 1, 6, 16, 0, 0, Math.PI * 2); x.stroke();
+  }
+  /* 太宽就缩小的一行字 */
+  function fitText(x, s, X, Y, maxW, w, px, num) { font(x, w, px, num); const m = x.measureText(s).width; if (m > maxW) font(x, w, px * maxW / m, num); x.fillText(s, X, Y); }
+  function wrap(x, s, maxW) {
+    const lines = []; let cur = '';
+    for (const ch of s) { if (cur && x.measureText(cur + ch).width > maxW) { lines.push(cur); cur = ch; } else cur += ch; }
+    if (cur) lines.push(cur);
+    return lines.slice(0, 2);
+  }
+  const ymd = t => { const d = new Date(t); return [d.getFullYear(), d.getMonth() + 1, d.getDate()]; };
+
+  async function draw(o) {
+    const T = THEMES[o.theme](), h = o.h, ms = elapsed(h), days = Math.floor(ms / DAY), smoke = h.kind === 'smoke';
+    const c = document.createElement('canvas'); c.width = W; c.height = H;
+    const x = c.getContext('2d'); x.textBaseline = 'alphabetic'; x.textAlign = 'left';
+    let g = x.createLinearGradient(0, 0, 0, H); T.sky.forEach((col, i) => g.addColorStop(i / (T.sky.length - 1), col)); x.fillStyle = g; x.fillRect(0, 0, W, H);
+    if (T.paper) grain(x);
+    if (T.sun) { g = x.createRadialGradient(320, 1230, 0, 320, 1230, 780); g.addColorStop(0, 'rgba(255,214,170,.8)'); g.addColorStop(.32, 'rgba(255,176,146,.3)'); g.addColorStop(1, 'rgba(255,170,150,0)'); x.fillStyle = g; x.fillRect(0, 0, W, H); }
+    stars(x, T, days + 1);
+    moon(x, T, h, ms);
+    hills(x, T);
+    /* 角色站在近处的山脊上，望着月亮 */
+    const who = cast().find(w => w.id === o.who), im = who ? await loadImg(who.body) : null;
+    if (im) {
+      const ih = 330, iw = ih * im.naturalWidth / im.naturalHeight, fx = 852, fy = ridgeY(fx) + 8;
+      x.fillStyle = T.shade; x.beginPath(); x.ellipse(fx, fy - 2, iw * .34, 12, 0, 0, Math.PI * 2); x.fill();
+      x.drawImage(im, fx - iw / 2, fy - ih, iw, ih);
+    }
+    /* 眉题 → 第一行 → 大数字 → 从哪天开始 */
+    const name = h.name && h.name !== '那件事' ? h.name : '';
+    x.fillStyle = T.ac; font(x, 600, 30);
+    let X = L; for (const ch of smoke ? '清息 · 戒烟日记' : name ? `清息 · 戒掉${name}` : '清息 · 改变日记') { x.fillText(ch, X, 168); X += x.measureText(ch).width + 5; }
+    x.fillStyle = T.tx; font(x, 600, 64); x.fillText(smoke ? '我已经戒烟' : '我已经坚持', L, 290);
+    const big = days >= 1 ? [nf(days), '天'] : ms >= HOUR ? [String(Math.floor(ms / HOUR)), '小时'] : [String(Math.max(1, Math.floor(ms / MIN))), '分钟'];
+    let size = 330; font(x, 200, size, true);
+    let w = x.measureText(big[0]).width;
+    if (w > 600) { size *= 600 / w; font(x, 200, size, true); w = x.measureText(big[0]).width; }
+    const bx = L - size * .045;
+    x.fillText(big[0], bx, 590);
+    x.fillStyle = T.tx2; font(x, 600, 76); x.fillText(big[1], bx + w + 22, 590);
+    const [y0, m0, d0] = ymd(timerStart(h));
+    x.fillStyle = T.tx3; font(x, 400, 34); x.fillText(`从 ${y0} 年 ${m0} 月 ${d0} 日开始`, L, 664);
+    /* 一排数字，中间用发丝线隔开 */
+    const its = o.items.filter(i => o.show.has(i.key));
+    if (its.length) {
+      const colW = (W - L * 2) / its.length, vs = its.length > 3 ? 52 : 62;
+      its.forEach((it, k) => {
+        const x0 = L + k * colW + (k ? 32 : 0), room = colW - (k ? 40 : 10);
+        if (k) { x.fillStyle = T.hair; x.fillRect(L + k * colW, 742, 2, 122); }
+        font(x, 400, vs * .58, true); const pw = it.pre ? x.measureText(it.pre).width + 4 : 0;
+        font(x, 300, vs, true); const tw = x.measureText(it.text).width;
+        font(x, 500, 30); const uw = it.unit ? x.measureText(it.unit).width + 6 : 0;
+        const k2 = Math.min(1, room / (pw + tw + uw));
+        let X2 = x0; x.fillStyle = T.tx;
+        if (it.pre) { font(x, 400, vs * .58 * k2, true); x.fillText(it.pre, X2, 810); X2 += pw * k2; }
+        font(x, 300, vs * k2, true); x.fillText(it.text, X2, 810); X2 += tw * k2 + 6 * k2;
+        if (it.unit) { font(x, 500, 30 * k2); x.fillStyle = T.tx2; x.fillText(it.unit, X2, 810); }
+        x.fillStyle = T.tx3; font(x, 400, 28); x.fillText(it.label, x0, 858);
+      });
+    }
+    /* 走到哪一站了（从点灯仪式点进来的，就是那盏灯） */
+    const tl = kindOf(h).timeline, last = [...tl].reverse().find(t => t.ms <= ms);
+    const mile = o.badge ? `点亮了「${o.badge.title}」灯笼` : last ? (smoke ? `身体在恢复 · ${last.title}` : last.title) : '';
+    if (mile) { lantern(x, L + 15, 942); x.fillStyle = T.gold; fitText(x, mile, L + 46, 954, 560, 500, 32); }
+    /* 想说的一句话 */
+    const line = (o.line || '').trim();
+    if (line) { x.fillStyle = T.tx2; font(x, 400, 40); wrap(x, `「${line}」`, 580).forEach((s, i) => x.fillText(s, L, 1040 + i * 56)); }
+    /* 落款：清息 + 日期 */
+    const fy = 1378;
+    x.fillStyle = T.ac; x.beginPath(); x.arc(L + 13, fy - 12, 13, 0, Math.PI * 2); x.fill();
+    x.fillStyle = T.near; x.beginPath(); x.arc(L + 20, fy - 17, 11, 0, Math.PI * 2); x.fill();   // 一弯小月亮
+    x.fillStyle = T.tx; font(x, 700, 34); x.fillText('清息', L + 40, fy);
+    const lw = x.measureText('清息').width;
+    x.fillStyle = T.tx3; font(x, 400, 26); x.fillText(smoke ? '陪你戒烟的小月亮' : '陪你改变的小月亮', L + 40 + lw + 18, fy - 1);
+    const [y1, m1, d1] = ymd(now());
+    x.textAlign = 'right'; x.fillText(`${y1}.${pad(m1)}.${pad(d1)}`, W - L, fy - 1); x.textAlign = 'left';
+    return c;
+  }
+
+  /* ---------- 弹层：预览 + 几个选项 + 发给朋友 / 存到相册 ---------- */
+  function open(o = {}) {
+    const h = o.habit || curHabit(); if (!h) return;
+    const its = items(h), Q = quotes(h), days = Math.floor(elapsed(h) / DAY), people = cast();
+    const st = { h, items: its, theme: 'night', who: people.some(p => p.id === look().mascot) ? look().mascot : people[0].id, show: new Set(its.slice(0, 3).map(i => i.key)), qi: days % Q.length, line: '', badge: o.badge || null, blob: null, url: '' };
+    st.line = Q[st.qi];
+    const tabs = (id, list, on) => `<div class="sh-pick" id="${id}">${list.map(([v, n]) => `<button type="button" data-v="${v}"${on(v) ? ' class="is-on"' : ''}>${n}</button>`).join('')}</div>`;
+    const { el, close } = openSheet(`<div class="sh">
+      <div class="sh-head"><h2 class="h2">分享卡片</h2><p class="sh-note">图只在这台手机上画，不会上传</p></div>
+      <div class="sh-pre" id="sh-pre"><img id="sh-img" alt="分享卡片预览"></div>
+      <div class="sh-opt"><span>样式</span>${tabs('sh-theme', [['night', '夜空'], ['dawn', '晨光'], ['paper', '素笺']], v => v === st.theme)}</div>
+      <div class="sh-opt"><span>陪着我</span><div class="sh-pick sh-who" id="sh-who">${people.map(p => `<button type="button" data-v="${p.id}" aria-label="${esc(p.name)}"${p.id === st.who ? ' class="is-on"' : ''}>${p.head ? `<img src="${p.head}" alt="">` : '<i class="sh-moon"></i>'}</button>`).join('')}</div></div>
+      <div class="sh-opt"><span>放哪些数</span>${tabs('sh-show', its.map(i => [i.key, i.label]), v => st.show.has(v))}</div>
+      <div class="sh-opt sh-say"><span>说一句</span><input class="sh-line" id="sh-line" maxlength="24" placeholder="不写也行" value="${esc(st.line)}" enterkeyhint="done"><button type="button" class="sh-swap" id="sh-swap">换一句</button></div>
+      <div class="row"><button type="button" class="btn btn-ghost" id="sh-save">存到相册</button><button type="button" class="btn btn-primary" id="sh-go">发给朋友</button></div>
+    </div>`);
+    const pre = $('#sh-pre', el), img = $('#sh-img', el);
+    let gen = 0, typing = 0;
+    async function refresh() {
+      const my = ++gen;
+      pre.classList.remove('is-ready');
+      const c = await draw(st); if (my !== gen) return;
+      const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', .92)); if (my !== gen || !blob) return;
+      st.blob = blob; if (st.url) URL.revokeObjectURL(st.url); st.url = URL.createObjectURL(blob);
+      img.onload = () => pre.classList.add('is-ready'); img.src = st.url;
+    }
+    const pick = (id, fn) => $(id, el).addEventListener('click', e => {
+      const b = e.target.closest('[data-v]'); if (!b) return;
+      fn(b.dataset.v, b); haptic(6); refresh();
+    });
+    pick('#sh-theme', (v, b) => { st.theme = v; $$('#sh-theme button', el).forEach(x => x.classList.toggle('is-on', x === b)); });
+    pick('#sh-who', (v, b) => { st.who = v; $$('#sh-who button', el).forEach(x => x.classList.toggle('is-on', x === b)); });
+    pick('#sh-show', (v, b) => { st.show.has(v) ? st.show.delete(v) : st.show.add(v); b.classList.toggle('is-on', st.show.has(v)); });
+    const input = $('#sh-line', el);
+    input.addEventListener('input', () => { st.line = input.value; clearTimeout(typing); typing = setTimeout(refresh, 260); });
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); input.blur(); } });
+    $('#sh-swap', el).addEventListener('click', () => { st.qi = (st.qi + 1) % Q.length; st.line = input.value = Q[st.qi]; haptic(6); refresh(); });
+    $('#sh-save', el).addEventListener('click', () => { if (st.blob) { haptic(8); viewer(st.blob); } });
+    $('#sh-go', el).addEventListener('click', async () => {
+      if (!st.blob) return;
+      const file = new File([st.blob], `清息-${days ? days + '天' : '今天'}.jpg`, { type: 'image/jpeg' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try { await navigator.share({ files: [file] }); haptic(10); return; }
+        catch (e) { if (e && e.name === 'AbortError') return; }
+      }
+      viewer(st.blob);   // 这个浏览器不能直接分享图片：显示大图，长按保存
+    });
+    refresh();
+    return { close };
+  }
+
+  /* 大图：长按存到相册（iPhone、微信里都是长按图片保存）；电脑上可以直接下载 */
+  function viewer(blob) {
+    const r = new FileReader();
+    r.onload = () => {
+      const el = document.createElement('div'); el.className = 'sh-full';
+      el.innerHTML = `<img src="${r.result}" alt="分享卡片"><p>长按图片，存到相册</p>
+        <div class="sh-full-row"><a class="btn btn-text" href="${r.result}" download="清息.jpg">下载图片</a><button type="button" class="btn btn-ghost" data-done>好了</button></div>`;
+      $('#app').append(el); nextFrame(() => el.classList.add('is-open'));
+      $('[data-done]', el).addEventListener('click', () => { el.classList.remove('is-open'); setTimeout(() => el.remove(), REDUCED ? 0 : 300); });
+    };
+    r.readAsDataURL(blob);
+  }
+
+  $('#btn-share').addEventListener('click', () => { haptic(8); open(); });
+  return { open, draw };
 })();
 
 
